@@ -1683,6 +1683,37 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 <!-- Tailwind 动态类 safelist：锁屏字号/字距 + 自研状态徽章 -->
 <div class="hidden text-5xl text-4xl text-3xl text-2xl tracking-[0.35em] tracking-[0.25em] tracking-[0.15em] tracking-[0.05em] border-sky-300 bg-sky-50 text-sky-700 border-cyan-300 bg-cyan-50 text-cyan-700 border-accent/40 bg-accent/10 text-accent border-amber-300 bg-amber-50 text-amber-700 border-emerald-300 bg-emerald-50 text-emerald-700 border-slate-300 bg-slate-100 text-slate-500" aria-hidden="true"></div>
 
+<!-- ==================== 登录页 ==================== -->
+<div id="login-screen" class="fixed inset-0 z-[9999] hidden items-center justify-center" style="background:linear-gradient(135deg,#f5f1e8 0%,#e8f4f5 100%)">
+  <div class="w-[90%] max-w-sm rounded-2xl border border-teal-100 bg-white/80 p-8 shadow-xl backdrop-blur">
+    <div class="mb-6 text-center">
+      <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/10">
+        <svg viewBox="0 0 40 40" class="h-8 w-8 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M20 6c-6 0-10 4-10 10 0 4 2 6 4 8 2 2 3 4 3 6h6c0-2 1-4 3-6 2-2 4-4 4-8 0-6-4-10-10-10z"/>
+          <circle cx="20" cy="18" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <h2 class="text-lg font-semibold text-slate-700">淇庚の须弥之境</h2>
+      <p class="mt-1 text-xs text-slate-400">请验证身份进入</p>
+    </div>
+    <div class="space-y-3">
+      <input id="login-username" type="text" placeholder="用户名" autocomplete="username"
+        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+      <input id="login-password" type="password" placeholder="密码" autocomplete="current-password"
+        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+      <div class="flex gap-2">
+        <div class="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600" id="login-captcha-label">1 + 2 = ?</div>
+        <input id="login-captcha" type="text" placeholder="答案"
+          class="w-20 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+      </div>
+      <button onclick="doLogin()" class="w-full rounded-lg bg-teal-600 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+        验证并进入
+      </button>
+      <p id="login-error" class="text-center text-xs text-rose-500"></p>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== 全局加载遮罩（boot 完成后淡出） ==================== -->
 <div id="app-loading" class="fixed inset-0 z-[9998] flex flex-col items-center justify-center transition-opacity duration-500" style="background:#FAF8F3">
   <p class="qs-load-title">须弥之境</p>
@@ -1788,7 +1819,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         <span class="sb-hide">迷局推演</span>
       </button>
 
-      <button data-view="biorhythm" title="书生观向" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+      <button data-view="biorhythm" title="书生观向" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm admin-only">
         <svg class="nav-icon w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span class="sb-hide">书生观向</span>
       </button>
@@ -2022,6 +2053,26 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
                 </div>
               </div>
             </div>
+
+            <!-- 当前用户 + 退出 -->
+            <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+              <div class="flex items-center justify-between px-3 py-2">
+                <span class="text-[11px] font-semibold text-slate-600" id="current-user-label">未登录</span>
+                <button onclick="doLogout()" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-100">退出</button>
+              </div>
+            </div>
+
+            <!-- 管理员：用户管理 -->
+            <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-amber-200 bg-amber-50 admin-only">
+              <div class="px-3 py-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold text-amber-700">👥 用户管理</span>
+                  <button onclick="openUserMgr()" class="rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] text-amber-700 transition-colors hover:bg-amber-100">管理</button>
+                </div>
+                <div id="user-list-preview" class="mt-2 text-[10px] text-amber-600/80"></div>
+              </div>
+            </div>
+
             <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-rose-200 bg-rose-50">
               <div class="flex items-center justify-between px-3 py-2">
                 <span class="text-[11px] font-semibold text-rose-600">危险操作</span>
@@ -3979,7 +4030,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
  * ================================================================ */
 
 /** 数据结构版本号：升级后旧缓存将自动重新初始化 */
-const CURRENT_VERSION = 3;
+const CURRENT_VERSION = 4;
 
 /** 旧版 localStorage 键名（仅用于一次性迁移，迁移后即清除） */
 const LEGACY_STORAGE_KEY = 'peos_app_state_v1';
@@ -4548,21 +4599,17 @@ function initData() {
         { key: 'reading',   label: '本月深度阅读', value: 0, unit: '本' },
         { key: 'decision',  label: '关键决策命中率', value: 0, unit: '%' },
       ],
-      trend: {
-        months:  ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月'],
-        revenue: [86, 92, 101, 97, 110, 118, 112, 121, 125, 128.6],
-        energy:  [70, 68, 74, 71, 78, 80, 76, 81, 79, 82],
-      },
+      trend: { months: [], revenue: [], energy: [] },
       radar: {
         dimensions: ['数据架构', '业财融合', 'AI应用', '管理与战略', '项目管理', '情绪韧性'],
-        current: [72, 86, 68, 75, 78, 66],
+        current: [0, 0, 0, 0, 0, 0],
         target:  [95, 92, 90, 88, 86, 85],
       },
       actions7d: {
         days: last7Days(),
-        studyHours:  [2.5, 3.0, 1.5, 4.0, 2.0, 5.5, 3.5],
-        codeLines:   [120, 360, 80, 420, 260, 510, 300],
-        outputWords: [800, 1500, 200, 2300, 600, 3200, 1200],
+        studyHours:  [0,0,0,0,0,0,0],
+        codeLines:   [0,0,0,0,0,0,0],
+        outputWords: [0,0,0,0,0,0,0],
       },
     },
     ontology: {
@@ -4573,153 +4620,28 @@ function initData() {
           sources: ['《论语 · 宪问》：修己以敬，修己以安人，修己以安百姓'],
           mapping: { from: '一切输入（技能 / 素材）', to: '一切输出（业务 / 目标）', logic: '所有节点最终投射于「我」：输入经内化形成能力，能力经验证形成价值，价值反哺下一轮输入，构成修心的增强回路。' },
         },
-        // 六路中枢：各模块的具体内容节点统一挂在其下
         ...ONTO_HUBS.map(ontoHubNode),
-        {
-          id: 'seed-1', name: '知行合一', category: 1, symbolSize: 36,
-          definition: '知是行之始，行是知之成。把读到的道理落到日常的一举一动，方为真知。',
-          sources: ['王阳明《传习录》'],
-          mapping: { from: '书上的道理', to: '今日的行动', logic: '每一条输入都要有一次输出回响，否则只是库存；知行之间不留缝隙，心法才真正内化。' },
-        },
-        {
-          id: 'seed-2', name: '日拱一卒', category: 3, symbolSize: 36,
-          definition: '不求一日千里，只求日日不断。以最小的行动量维持长期的复利。',
-          sources: ['曾国藩日课', '《日拱一卒》'],
-          mapping: { from: '每日一卒', to: '十年一运', logic: '把宏大愿力切成今日可完成的一件小事，以稳定的节奏积累，功不唐捐。' },
-        },
-        {
-          id: 'seed-3', name: '见自己', category: 4, symbolSize: 36,
-          definition: '见天地、见众生，终须见自己。修行的终点是看清自己的本心与边界。',
-          sources: ['《一代宗师》', '《道德经》「知人者智，自知者明」'],
-          mapping: { from: '向外求索', to: '向内观照', logic: '所有的向外征战最终都要回到向内求：知道自己要什么、能舍什么，愿力才不散。' },
-        },
-        {
-          id: 'sap', name: 'SAP', category: 1, symbolSize: 44,
-          definition: '资源计划系统，业财融合实践的主战场，覆盖 FI/CO/MM/PP 等核心模块。',
-          sources: ['SAP FICO 官方文档', 'SAP 操作手册'],
-          mapping: { from: 'SAP 成本中心', to: '指标平台的「事实表维度设计」', logic: '把系统配置与月结经验转译为数据建模语言：成本中心成为维度表主键，让每一笔费用可追溯、可下钻、可归因。' },
-        },
-        {
-          id: 'dama', name: 'DAMA', category: 1, symbolSize: 44,
-          definition: '国际数据管理协会知识体系（DMBOK），涵盖数据治理、数据架构、数据质量等 11 大知识领域。',
-          sources: ['《DAMA 数据管理知识体系指南》（DAMA-DMBOK 中文版）'],
-          mapping: { from: 'DAMA 数据治理框架', to: '个人数据中台的方法论底座', logic: '用 DMBOK 的知识领域为个人指标体系定纲：先治理、后建模、再服务，避免野路子建模的技术债。' },
-        },
-        {
-          id: 'sql', name: 'SQL', category: 1, symbolSize: 42,
-          definition: '结构化查询语言，数据分析与事实表构建的基本功，连接业务问题与数据答案的桥梁。',
-          sources: ['《SQL 进阶教程》', 'LeetCode 数据库题库'],
-          mapping: { from: 'SQL 窗口函数', to: '火电指标的同比 / 环比 / 排名计算', logic: '把复杂对比逻辑沉淀为可复用的 SQL 模板，让指标口径一次定义、处处一致。' },
-        },
-        {
-          id: 'cost', name: '财务成本管控', category: 1, symbolSize: 46,
-          definition: '制造业成本核算、标准成本差异分析与降本增效的复合能力，是安身立命的硬核抓手。',
-          sources: ['自考《成本管理》教材', '工厂成本月结实战复盘'],
-          mapping: { from: '标准成本差异分析', to: '概览大屏的归因维度', logic: '将价差 / 量差 / 效率差的拆解思路，迁移为指标异动的多维归因框架，让大屏不止于「看」，更能「诊」。' },
-        },
-        {
-          id: 'book-dama', name: '《DAMA数据管理》', category: 2, symbolSize: 38,
-          definition: 'DAMA-DMBOK 中文译本，系统讲解数据管理 11 大知识领域的权威读物。',
-          sources: ['机械工业出版社', '微信读书标注笔记 327 条'],
-          mapping: { from: '阅读输入', to: '知识图谱的本体节点', logic: '每章读书笔记拆解为图谱节点与关系，读完即沉淀，沉淀即可检索，实现「读书 → 资产」的转化。' },
-        },
-        {
-          id: 'book-exam', name: '自考教材', category: 2, symbolSize: 36,
-          definition: '会计学、成本管理专业自考教材体系，构建系统化财务理论框架的输入源。',
-          sources: ['自考办指定教材', '历年真题库'],
-          mapping: { from: '教材理论', to: '财务分析框架与学历证书', logic: '以考促学：把教材知识压缩为可复用的分析框架，同时积累国家认可的学历背书。' },
-        },
-        {
-          id: 'book-kongfz', name: '孔夫子书籍', category: 2, symbolSize: 36,
-          definition: '孔夫子旧书网淘得的人文、史哲与管理类旧书，低成本高密度的人文滋养。',
-          sources: ['孔夫子旧书网订单', '书眉批注与读书笔记'],
-          mapping: { from: '人文阅读', to: '情绪韧性与管理哲学', logic: '史哲类书籍提供长周期视角，缓解转型焦虑，为「修己」提供心力支撑。' },
-        },
-        {
-          id: 'biz-power', name: '火电指标', category: 3, symbolSize: 42,
-          definition: '火力发电核心技术经济指标：发电量、供电煤耗、利用小时数、厂用电率等。',
-          sources: ['集团生产运营月报', '对标管理指标体系'],
-          mapping: { from: '火电生产技术指标', to: '事实表的事实字段', logic: '把机炉电化的生产语言翻译为数据语言，构建生产-数据一体化指标主题域。' },
-        },
-        {
-          id: 'biz-costcenter', name: '成本中心', category: 3, symbolSize: 40,
-          definition: 'SAP CO 模块中的成本归集与管控单元，连接财务凭证与业务责任的最小组织。',
-          sources: ['SAP CO 模块配置', '年度预算分解方案'],
-          mapping: { from: '成本中心主数据', to: '指标平台的维度表', logic: '成本中心编码成为贯通预算、核算、分析三大域的一致性维度，是业财融合的数据锚点。' },
-        },
-        {
-          id: 'biz-fact', name: '事实表设计', category: 3, symbolSize: 42,
-          definition: '以业务过程为中心的维度建模实践：声明粒度、确定维度、选择事实。',
-          sources: ['《数据仓库工具箱》', 'DAMA 数据架构知识域'],
-          mapping: { from: '维度建模方法论', to: '转型架构师的核心作品', logic: '每一张事实表都是「业务理解 × 数据功底」的结晶，是转型路上最有说服力的作品集。' },
-        },
-        {
-          id: 'goal-arch', name: '转型架构师', category: 4, symbolSize: 44,
-          definition: '从「业财复合人才」向「数据 / 数据架构师」跃迁的中期目标。',
-          sources: ['个人三年转型规划'],
-          mapping: { from: '技能 × 业务 × 素材的合力', to: '架构师岗位胜任力', logic: '以 SAP 业务纵深 + DAMA 方法论 + 事实表作品，构建差异化胜任力，避开纯技术赛道的红海竞争。' },
-        },
-        {
-          id: 'goal-35', name: '35+破局', category: 4, symbolSize: 44,
-          definition: '以复合能力壁垒与个人品牌，突破 35 岁职业瓶颈的长期愿景。',
-          sources: ['个人愿景声明'],
-          mapping: { from: '修己（学习飞轮）× 践行（价值验证）', to: '长期主义的破局路径', logic: '不拼体力拼体系：用数字孪生沉淀复利资产，让 35+ 成为经验变现的起点而非终点。' },
-        },
       ],
       edges: [
-        { source: 'self', target: 'seed-1', label: '悟出' },
-        { source: 'self', target: 'seed-2', label: '践行' },
-        { source: 'self', target: 'seed-3', label: '通向' },
-        { source: 'self', target: 'sap', label: '精通中' },
-        { source: 'self', target: 'dama', label: '研读' },
-        { source: 'self', target: 'sql', label: '熟练' },
-        { source: 'self', target: 'cost', label: '核心能力' },
-        { source: 'self', target: 'book-dama', label: '阅读了' },
-        { source: 'self', target: 'book-exam', label: '阅读了' },
-        { source: 'self', target: 'book-kongfz', label: '淘读' },
-        { source: 'book-dama', target: 'dama', label: '启发了' },
-        { source: 'book-exam', target: 'cost', label: '支撑了' },
-        { source: 'book-kongfz', target: 'self', label: '滋养了' },
-        { source: 'sap', target: 'biz-costcenter', label: '应用于' },
-        { source: 'cost', target: 'biz-costcenter', label: '管控于' },
-        { source: 'biz-power', target: 'biz-fact', label: '映射' },
-        { source: 'dama', target: 'biz-fact', label: '启发了' },
-        { source: 'sql', target: 'biz-fact', label: '应用于' },
-        { source: 'self', target: 'biz-power', label: '负责' },
-        { source: 'biz-fact', target: 'goal-arch', label: '支撑' },
-        { source: 'sap', target: 'goal-arch', label: '积累' },
-        { source: 'goal-arch', target: 'goal-35', label: '通向' },
-        { source: 'self', target: 'goal-35', label: '锚定' },
-        // 六路中枢全部映照于「我」
         ...ONTO_HUBS.map(h => ({ source: 'self', target: h.id, label: h.edgeLabel })),
       ],
       latest_analysis: '',
     },
-    inputOutput: {
-      inputs: [
-        { id: 'in-demo-1', title: '《DAMA数据管理知识体系指南》', reason: '构建数据治理方法论底座，支撑架构师转型', progress: 65, createdAt: daysAgoIso(9) },
-        { id: 'in-demo-2', title: '《数据仓库工具箱》', reason: '维度建模与事实表设计的实战圣经', progress: 30, createdAt: daysAgoIso(4) },
-        { id: 'in-demo-3', title: '自考《成本管理》教材', reason: '补齐成本核算理论，联动工厂月结实战', progress: 80, createdAt: daysAgoIso(15) },
-      ],
-      outputs: [
-        { id: 'out-demo-1', type: '读后感', content: '完成第 1-6 章读书笔记，提炼数据治理 11 大知识领域思维导图，已沉淀进本体论知识图谱。', linkedInputId: 'in-demo-1', createdAt: daysAgoIso(2) },
-        { id: 'out-demo-2', type: '代码原型更新', content: '将维度建模「声明粒度 → 确定维度 → 选择事实」三步法落地为指标平台事实表脚手架 SQL 模板。', linkedInputId: 'in-demo-2', createdAt: daysAgoIso(1) },
-      ],
-    },
-    leisure_books: defaultLeisureBooks(),
-    leisure_outputs: defaultLeisureOutputs(),
-    decisions: demoDecisions(),
+    inputOutput: { inputs: [], outputs: [] },
+    leisure_books: [],
+    leisure_outputs: [],
+    decisions: [],
     fleeting_moments: [],
     visions: [],
-    todos: demoTodos(),
+    todos: [],
     dailyEnergy: {},
     daily_journal: {},
     favorites: [],
     nightboat: [],
-    book_list: demoBooks(),
-    wishlist: demoWishlist(),
-    side_projects: demoProjects(),
-    mentors: demoMentors(),
+    book_list: [],
+    wishlist: [],
+    side_projects: [],
+    mentors: [],
     aiAnalysis: { reports: [], rejected: [] },
     morningBrief: { date: '', content: '' },
     biorhythm: {
@@ -4827,6 +4749,80 @@ async function saveState() {
  * 单人单文档：本地优先，云端做备份+多端同步
  * 冲突策略：updated_at 新的覆盖旧的
  * ================================================================ */
+/* ================================================================
+ * 用户认证（多用户）
+ * ================================================================ */
+const UserAuth = {
+  current: null,  // { username, role, display_name }
+  captchaA: 0,
+  captchaB: 0,
+
+  get isAdmin() { return this.current && this.current.role === 'admin'; },
+  get username() { return this.current ? this.current.username : ''; },
+
+  init() {
+    const saved = localStorage.getItem('sr_user');
+    if (saved) {
+      try { this.current = JSON.parse(saved); } catch (e) {}
+    }
+  },
+
+  genCaptcha() {
+    this.captchaA = Math.floor(Math.random() * 9) + 1;
+    this.captchaB = Math.floor(Math.random() * 9) + 1;
+    return this.captchaA + ' + ' + this.captchaB + ' = ?';
+  },
+
+  checkCaptcha(answer) {
+    return parseInt(answer) === (this.captchaA + this.captchaB);
+  },
+
+  async login(username, password, captchaAnswer) {
+    if (!this.checkCaptcha(captchaAnswer)) {
+      return { ok: false, msg: '验证码错误' };
+    }
+    if (!CloudSync.enabled) return { ok: false, msg: '云端未连接' };
+    const { data, error } = await CloudSync.client
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .eq('password_hash', password)
+      .single();
+    if (error || !data) return { ok: false, msg: '用户名或密码错误' };
+    this.current = { username: data.username, role: data.role, display_name: data.display_name || data.username };
+    localStorage.setItem('sr_user', JSON.stringify(this.current));
+    return { ok: true };
+  },
+
+  logout() {
+    this.current = null;
+    localStorage.removeItem('sr_user');
+  },
+
+  async listUsers() {
+    if (!this.isAdmin) return [];
+    const { data } = await CloudSync.client.from('users').select('*').order('created_at');
+    return data || [];
+  },
+
+  async createUser(username, displayName) {
+    if (!this.isAdmin) return { ok: false, msg: '无权限' };
+    await CloudSync.client.from('users').insert({
+      username, password_hash: '123456', role: 'user', display_name: displayName || username
+    });
+    return { ok: true };
+  },
+
+  async resetPassword(username, newPwd) {
+    if (!this.isAdmin) return { ok: false, msg: '无权限' };
+    await CloudSync.client.from('users').update({ password_hash: newPwd }).eq('username', username);
+    return { ok: true };
+  },
+};
+
+/* ================================================================
+ * 云端同步（Supabase）：按 user_id 存储
+ * ================================================================ */
 const CloudSync = {
   url: 'https://bukdghkbbtopvtpayatl.supabase.co',
   key: 'sb_publishable_HHMIVGBLxEXOEy1QO2GmhA_I19RTfFO',
@@ -4845,29 +4841,25 @@ const CloudSync = {
     }
   },
 
-  /** 启动时拉取云端数据，与本地合并 */
+  /** 启动时拉取当前用户的云端数据 */
   async pull() {
-    if (!this.enabled) return;
+    if (!this.enabled || !UserAuth.username) return;
     try {
       const { data, error } = await this.client
         .from('app_state')
         .select('*')
-        .eq('id', 'main')
+        .eq('user_id', UserAuth.username)
         .single();
       if (error || !data) {
-        console.log('[CloudSync] 云端无数据，跳过');
+        console.log('[CloudSync] 云端无该用户数据，跳过');
         return;
       }
       const localUpdated = AppState.meta && AppState.meta.updatedAt;
       const cloudUpdated = data.updated_at;
-      console.log('[CloudSync] 本地:', localUpdated, '云端:', cloudUpdated);
-      // 云端比本地新 → 用云端覆盖
       if (cloudUpdated && (!localUpdated || cloudUpdated > localUpdated)) {
         console.log('[CloudSync] 云端较新，拉取合并');
-        const cloudData = data.data;
-        // 保留本地 meta.updatedAt，其余用云端
         const preserved = { ...AppState.meta };
-        AppState = cloudData;
+        AppState = data.data;
         AppState.meta = preserved;
         await Store.saveState(AppState);
         showToast('已从云端同步最新数据', 'success');
@@ -4877,7 +4869,6 @@ const CloudSync = {
     }
   },
 
-  /** 防抖推送本地数据到云端 */
   schedulePush() {
     if (!this.enabled) return;
     clearTimeout(this.pushTimer);
@@ -4885,18 +4876,18 @@ const CloudSync = {
   },
 
   async push() {
-    if (!this.enabled) return;
+    if (!this.enabled || !UserAuth.username) return;
     try {
       const payload = {
-        id: 'main',
+        user_id: UserAuth.username,
         data: AppState,
         updated_at: new Date().toISOString(),
       };
       const { error } = await this.client
         .from('app_state')
-        .upsert(payload, { onConflict: 'id' });
+        .upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
-      console.log('[CloudSync] 已推送云端');
+      console.log('[CloudSync] 已推送云端:', UserAuth.username);
     } catch (e) {
       console.warn('[CloudSync] 推送失败：', e);
     }
@@ -13308,7 +13299,72 @@ function hideLoading() {
 // 兜底：若初始化异常导致遮罩未被移除，15 秒后强制淡出
 setTimeout(hideLoading, 15000);
 
+async function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const c = document.getElementById('login-captcha').value.trim();
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  if (!u || !p) { err.textContent = '请输入用户名和密码'; return; }
+  const r = await UserAuth.login(u, p, c);
+  if (!r.ok) { err.textContent = r.msg; document.getElementById('login-captcha-label').textContent = UserAuth.genCaptcha(); return; }
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('flex');
+  boot();
+}
+
+function doLogout() {
+  UserAuth.logout();
+  location.reload();
+}
+
+function applyRoleGating() {
+  // 更新当前用户标签
+  const label = document.getElementById('current-user-label');
+  if (label && UserAuth.current) {
+    label.textContent = (UserAuth.current.display_name || UserAuth.current.username) + (UserAuth.isAdmin ? ' · 管理员' : '');
+  }
+  // 非管理员隐藏 admin-only 元素
+  if (!UserAuth.isAdmin) {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
+  // 加载用户列表预览
+  if (UserAuth.isAdmin) {
+    UserAuth.listUsers().then(users => {
+      const el = document.getElementById('user-list-preview');
+      if (el) el.textContent = users.map(u => u.username + (u.role === 'admin' ? '★' : '')).join('、');
+    });
+  }
+}
+
+function openUserMgr() {
+  const list = prompt('用户列表（输入新用户名创建，默认密码 123456）：', '(加载中...)');
+  // 简化：直接弹创建框
+  const newUser = prompt('创建新用户\n用户名：');
+  if (!newUser) return;
+  const newName = prompt('显示昵称（可留空）：') || newUser;
+  UserAuth.createUser(newUser.trim(), newName.trim()).then(r => {
+    if (r.ok) { showToast('用户 ' + newUser + ' 已创建，初始密码 123456', 'success'); location.reload(); }
+    else showToast(r.msg, 'error');
+  });
+}
+
 async function boot() {
+  // 0) 未登录则显示登录页
+  UserAuth.init();
+  CloudSync.init();
+  if (!UserAuth.current) {
+    const ls = document.getElementById('login-screen');
+    ls.classList.remove('hidden');
+    ls.classList.add('flex');
+    UserAuth.genCaptchaLabel = function() {
+      document.getElementById('login-captcha-label').textContent = this.genCaptcha();
+    };
+    UserAuth.genCaptchaLabel();
+    document.getElementById('app-loading').style.display = 'none';
+    return;
+  }
+
   // 1) 异步拉取 IndexedDB 数据 —— 必须先于任何渲染（ECharts / 表单）完成
   let saved = null;
   try {
@@ -13743,11 +13799,17 @@ async function boot() {
   CloudSync.init();
   try { await CloudSync.pull(); } catch (e) { console.warn('[CloudSync] pull 异常：', e); }
 
-  // 10) 恢复上次所在视图（此时数据已就绪，可安全渲染所有图表）
-  switchView(AppState.meta.currentView || 'dashboard');
+  // 10) 权限过滤：隐藏非管理员功能
+  applyRoleGating();
 
-  // 每次打开先进入锁屏
-  lockScreen();
+  // 11) 恢复上次所在视图（此时数据已就绪，可安全渲染所有图表）
+  // 非管理员不允许进入书生观向页，强制回 dashboard
+  const startView = (UserAuth.isAdmin && AppState.meta.currentView) ? AppState.meta.currentView : 'dashboard';
+  switchView(startView);
+
+  // 每次打开先进入锁屏（仅管理员需要书生观向锁屏）
+  if (UserAuth.isAdmin) lockScreen();
+  else hideLoading();
 
   // 首屏渲染完成后淡出加载遮罩
   requestAnimationFrame(() => setTimeout(hideLoading, 80));
