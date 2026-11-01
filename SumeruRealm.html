@@ -1683,33 +1683,33 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 <!-- Tailwind 动态类 safelist：锁屏字号/字距 + 自研状态徽章 -->
 <div class="hidden text-5xl text-4xl text-3xl text-2xl tracking-[0.35em] tracking-[0.25em] tracking-[0.15em] tracking-[0.05em] border-sky-300 bg-sky-50 text-sky-700 border-cyan-300 bg-cyan-50 text-cyan-700 border-accent/40 bg-accent/10 text-accent border-amber-300 bg-amber-50 text-amber-700 border-emerald-300 bg-emerald-50 text-emerald-700 border-slate-300 bg-slate-100 text-slate-500" aria-hidden="true"></div>
 
-<!-- ==================== 登录页 ==================== -->
-<div id="login-screen" class="fixed inset-0 z-[9999] hidden items-center justify-center" style="background:linear-gradient(135deg,#f5f1e8 0%,#e8f4f5 100%)">
-  <div class="w-[90%] max-w-sm rounded-2xl border border-teal-100 bg-white/80 p-8 shadow-xl backdrop-blur">
-    <div class="mb-6 text-center">
-      <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500/10">
-        <svg viewBox="0 0 40 40" class="h-8 w-8 text-teal-600" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M20 6c-6 0-10 4-10 10 0 4 2 6 4 8 2 2 3 4 3 6h6c0-2 1-4 3-6 2-2 4-4 4-8 0-6-4-10-10-10z"/>
-          <circle cx="20" cy="18" r="2" fill="currentColor"/>
-        </svg>
-      </div>
-      <h2 class="text-lg font-semibold text-slate-700">淇庚の须弥之境</h2>
-      <p class="mt-1 text-xs text-slate-400">请验证身份进入</p>
+<!-- ==================== 登录页（与锁屏同风格） ==================== -->
+<div id="login-screen" class="fixed inset-0 z-[9999] hidden flex-col items-center justify-center overflow-hidden" style="background:linear-gradient(180deg,#1a3a4a 0%,#2d5a6a 50%,#1a3a4a 100%)">
+  <div class="text-center">
+    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl" style="background:linear-gradient(135deg,#2B9FAC,#1a7a8a);box-shadow:0 0 40px rgba(43,159,172,0.4)">
+      <svg viewBox="0 0 40 40" class="h-10 w-10 text-white" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 6c-6 0-10 4-10 10 0 4 2 6 4 8 2 2 3 4 3 6h6c0-2 1-4 3-6 2-2 4-4 4-8 0-6-4-10-10-10z"/>
+        <circle cx="20" cy="18" r="2" fill="currentColor"/>
+      </svg>
     </div>
+    <p class="mb-2 text-[11px] tracking-widest text-teal-200/60">善若水 · 厚德载物 · 三人同行</p>
+    <h2 class="mb-8 text-2xl font-bold tracking-wide text-white">藏器于身 待时而动</h2>
+  </div>
+  <div class="w-[85%] max-w-xs rounded-xl border border-teal-400/20 bg-white/5 p-6 backdrop-blur">
     <div class="space-y-3">
       <input id="login-username" type="text" placeholder="用户名" autocomplete="username"
-        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+        class="w-full rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
       <input id="login-password" type="password" placeholder="密码" autocomplete="current-password"
-        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+        class="w-full rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
       <div class="flex gap-2">
-        <div class="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600" id="login-captcha-label">1 + 2 = ?</div>
+        <div class="flex-1 rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-teal-100" id="login-captcha-label">1 + 2 = ?</div>
         <input id="login-captcha" type="text" placeholder="答案"
-          class="w-20 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-400" />
+          class="w-20 rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
       </div>
-      <button onclick="doLogin()" class="w-full rounded-lg bg-teal-600 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+      <button onclick="doLogin()" class="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition hover:opacity-90" style="background:linear-gradient(90deg,#2B9FAC,#1a7a8a)">
         验证并进入
       </button>
-      <p id="login-error" class="text-center text-xs text-rose-500"></p>
+      <p id="login-error" class="text-center text-xs text-rose-300"></p>
     </div>
   </div>
 </div>
@@ -11122,19 +11122,24 @@ function toggleNightboatFull() {
   }
 }
 
-/** 流星：每10~20秒划一颗 */
+/** 流星：每10~20秒划过，数量随机1~3颗 */
 function startMeteorLoop() {
   function spawn() {
     const bg = document.querySelector('.nightboat-bg');
     if (!bg) return;
-    const dur = 1.2 + Math.random() * 0.8;
-    const m = document.createElement('div');
-    m.className = 'night-meteor';
-    m.style.left = (30 + Math.random() * 60) + '%';
-    m.style.top = (5 + Math.random() * 30) + '%';
-    m.style.animationDuration = dur + 's';
-    bg.appendChild(m);
-    setTimeout(() => m.remove(), dur * 1000);
+    const count = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const dur = 1.2 + Math.random() * 0.8;
+        const m = document.createElement('div');
+        m.className = 'night-meteor';
+        m.style.left = (30 + Math.random() * 60) + '%';
+        m.style.top = (5 + Math.random() * 30) + '%';
+        m.style.animationDuration = dur + 's';
+        bg.appendChild(m);
+        setTimeout(() => m.remove(), dur * 1000);
+      }, i * (200 + Math.random() * 300));
+    }
     setTimeout(spawn, 10000 + Math.random() * 10000);
   }
   setTimeout(spawn, 3000 + Math.random() * 5000);
