@@ -1683,37 +1683,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 <!-- Tailwind 动态类 safelist：锁屏字号/字距 + 自研状态徽章 -->
 <div class="hidden text-5xl text-4xl text-3xl text-2xl tracking-[0.35em] tracking-[0.25em] tracking-[0.15em] tracking-[0.05em] border-sky-300 bg-sky-50 text-sky-700 border-cyan-300 bg-cyan-50 text-cyan-700 border-accent/40 bg-accent/10 text-accent border-amber-300 bg-amber-50 text-amber-700 border-emerald-300 bg-emerald-50 text-emerald-700 border-slate-300 bg-slate-100 text-slate-500" aria-hidden="true"></div>
 
-<!-- ==================== 登录页（与锁屏同风格） ==================== -->
-<div id="login-screen" class="fixed inset-0 z-[9999] hidden flex-col items-center justify-center overflow-hidden" style="background:linear-gradient(180deg,#1a3a4a 0%,#2d5a6a 50%,#1a3a4a 100%)">
-  <div class="text-center">
-    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl" style="background:linear-gradient(135deg,#2B9FAC,#1a7a8a);box-shadow:0 0 40px rgba(43,159,172,0.4)">
-      <svg viewBox="0 0 40 40" class="h-10 w-10 text-white" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M20 6c-6 0-10 4-10 10 0 4 2 6 4 8 2 2 3 4 3 6h6c0-2 1-4 3-6 2-2 4-4 4-8 0-6-4-10-10-10z"/>
-        <circle cx="20" cy="18" r="2" fill="currentColor"/>
-      </svg>
-    </div>
-    <p class="mb-2 text-[11px] tracking-widest text-teal-200/60">善若水 · 厚德载物 · 三人同行</p>
-    <h2 class="mb-8 text-2xl font-bold tracking-wide text-white">藏器于身 待时而动</h2>
-  </div>
-  <div class="w-[85%] max-w-xs rounded-xl border border-teal-400/20 bg-white/5 p-6 backdrop-blur">
-    <div class="space-y-3">
-      <input id="login-username" type="text" placeholder="用户名" autocomplete="username"
-        class="w-full rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
-      <input id="login-password" type="password" placeholder="密码" autocomplete="current-password"
-        class="w-full rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
-      <div class="flex gap-2">
-        <div class="flex-1 rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-teal-100" id="login-captcha-label">1 + 2 = ?</div>
-        <input id="login-captcha" type="text" placeholder="答案"
-          class="w-20 rounded-lg border border-teal-300/20 bg-white/10 px-3 py-2.5 text-sm text-white placeholder-teal-200/40 outline-none focus:border-teal-400/50" />
-      </div>
-      <button onclick="doLogin()" class="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition hover:opacity-90" style="background:linear-gradient(90deg,#2B9FAC,#1a7a8a)">
-        验证并进入
-      </button>
-      <p id="login-error" class="text-center text-xs text-rose-300"></p>
-    </div>
-  </div>
-</div>
-
 <!-- ==================== 全局加载遮罩（boot 完成后淡出） ==================== -->
 <div id="app-loading" class="fixed inset-0 z-[9998] flex flex-col items-center justify-center transition-opacity duration-500" style="background:#FAF8F3">
   <p class="qs-load-title">须弥之境</p>
@@ -1819,7 +1788,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         <span class="sb-hide">迷局推演</span>
       </button>
 
-      <button data-view="biorhythm" title="书生观向" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm admin-only">
+      <button data-view="biorhythm" title="书生观向" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
         <svg class="nav-icon w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span class="sb-hide">书生观向</span>
       </button>
@@ -2051,25 +2020,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
                   <button onclick="CloudSync.push(); showToast('已推送云端', 'success')" class="rounded-md border border-sky-300 bg-white px-2 py-1 text-[11px] text-sky-700 transition-colors hover:bg-sky-100">上传</button>
                   <button onclick="CloudSync.pull(); showToast('已从云端拉取', 'success')" class="rounded-md border border-sky-300 bg-white px-2 py-1 text-[11px] text-sky-700 transition-colors hover:bg-sky-100">下载</button>
                 </div>
-              </div>
-            </div>
-
-            <!-- 当前用户 + 退出 -->
-            <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-              <div class="flex items-center justify-between px-3 py-2">
-                <span class="text-[11px] font-semibold text-slate-600" id="current-user-label">未登录</span>
-                <button onclick="doLogout()" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-600 transition-colors hover:bg-slate-100">退出</button>
-              </div>
-            </div>
-
-            <!-- 管理员：用户管理 -->
-            <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-amber-200 bg-amber-50 admin-only">
-              <div class="px-3 py-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-[11px] font-semibold text-amber-700">👥 用户管理</span>
-                  <button onclick="openUserMgr()" class="rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] text-amber-700 transition-colors hover:bg-amber-100">管理</button>
-                </div>
-                <div id="user-list-preview" class="mt-2 text-[10px] text-amber-600/80"></div>
               </div>
             </div>
 
@@ -4750,78 +4700,7 @@ async function saveState() {
  * 冲突策略：updated_at 新的覆盖旧的
  * ================================================================ */
 /* ================================================================
- * 用户认证（多用户）
- * ================================================================ */
-const UserAuth = {
-  current: null,  // { username, role, display_name }
-  captchaA: 0,
-  captchaB: 0,
-
-  get isAdmin() { return this.current && this.current.role === 'admin'; },
-  get username() { return this.current ? this.current.username : ''; },
-
-  init() {
-    const saved = localStorage.getItem('sr_user');
-    if (saved) {
-      try { this.current = JSON.parse(saved); } catch (e) {}
-    }
-  },
-
-  genCaptcha() {
-    this.captchaA = Math.floor(Math.random() * 9) + 1;
-    this.captchaB = Math.floor(Math.random() * 9) + 1;
-    return this.captchaA + ' + ' + this.captchaB + ' = ?';
-  },
-
-  checkCaptcha(answer) {
-    return parseInt(answer) === (this.captchaA + this.captchaB);
-  },
-
-  async login(username, password, captchaAnswer) {
-    if (!this.checkCaptcha(captchaAnswer)) {
-      return { ok: false, msg: '验证码错误' };
-    }
-    if (!CloudSync.enabled) return { ok: false, msg: '云端未连接' };
-    const { data, error } = await CloudSync.client
-      .from('users')
-      .select('*')
-      .eq('username', username)
-      .eq('password_hash', password)
-      .single();
-    if (error || !data) return { ok: false, msg: '用户名或密码错误' };
-    this.current = { username: data.username, role: data.role, display_name: data.display_name || data.username };
-    localStorage.setItem('sr_user', JSON.stringify(this.current));
-    return { ok: true };
-  },
-
-  logout() {
-    this.current = null;
-    localStorage.removeItem('sr_user');
-  },
-
-  async listUsers() {
-    if (!this.isAdmin) return [];
-    const { data } = await CloudSync.client.from('users').select('*').order('created_at');
-    return data || [];
-  },
-
-  async createUser(username, displayName) {
-    if (!this.isAdmin) return { ok: false, msg: '无权限' };
-    await CloudSync.client.from('users').insert({
-      username, password_hash: '123456', role: 'user', display_name: displayName || username
-    });
-    return { ok: true };
-  },
-
-  async resetPassword(username, newPwd) {
-    if (!this.isAdmin) return { ok: false, msg: '无权限' };
-    await CloudSync.client.from('users').update({ password_hash: newPwd }).eq('username', username);
-    return { ok: true };
-  },
-};
-
-/* ================================================================
- * 云端同步（Supabase）：按 user_id 存储
+ * 云端同步（Supabase）：单用户
  * ================================================================ */
 const CloudSync = {
   url: 'https://bukdghkbbtopvtpayatl.supabase.co',
@@ -4841,23 +4720,21 @@ const CloudSync = {
     }
   },
 
-  /** 启动时拉取当前用户的云端数据 */
   async pull() {
-    if (!this.enabled || !UserAuth.username) return;
+    if (!this.enabled) return;
     try {
       const { data, error } = await this.client
         .from('app_state')
         .select('*')
-        .eq('user_id', UserAuth.username)
+        .eq('user_id', 'main')
         .single();
       if (error || !data) {
-        console.log('[CloudSync] 云端无该用户数据，跳过');
+        console.log('[CloudSync] 云端无数据，跳过');
         return;
       }
       const localUpdated = AppState.meta && AppState.meta.updatedAt;
       const cloudUpdated = data.updated_at;
       if (cloudUpdated && (!localUpdated || cloudUpdated > localUpdated)) {
-        console.log('[CloudSync] 云端较新，拉取合并');
         const preserved = { ...AppState.meta };
         AppState = data.data;
         AppState.meta = preserved;
@@ -4876,10 +4753,10 @@ const CloudSync = {
   },
 
   async push() {
-    if (!this.enabled || !UserAuth.username) return;
+    if (!this.enabled) return;
     try {
       const payload = {
-        user_id: UserAuth.username,
+        user_id: 'main',
         data: AppState,
         updated_at: new Date().toISOString(),
       };
@@ -4887,7 +4764,7 @@ const CloudSync = {
         .from('app_state')
         .upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
-      console.log('[CloudSync] 已推送云端:', UserAuth.username);
+      console.log('[CloudSync] 已推送云端');
     } catch (e) {
       console.warn('[CloudSync] 推送失败：', e);
     }
@@ -13304,72 +13181,7 @@ function hideLoading() {
 // 兜底：若初始化异常导致遮罩未被移除，15 秒后强制淡出
 setTimeout(hideLoading, 15000);
 
-async function doLogin() {
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
-  const c = document.getElementById('login-captcha').value.trim();
-  const err = document.getElementById('login-error');
-  err.textContent = '';
-  if (!u || !p) { err.textContent = '请输入用户名和密码'; return; }
-  const r = await UserAuth.login(u, p, c);
-  if (!r.ok) { err.textContent = r.msg; document.getElementById('login-captcha-label').textContent = UserAuth.genCaptcha(); return; }
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('login-screen').classList.remove('flex');
-  boot();
-}
-
-function doLogout() {
-  UserAuth.logout();
-  location.reload();
-}
-
-function applyRoleGating() {
-  // 更新当前用户标签
-  const label = document.getElementById('current-user-label');
-  if (label && UserAuth.current) {
-    label.textContent = (UserAuth.current.display_name || UserAuth.current.username) + (UserAuth.isAdmin ? ' · 管理员' : '');
-  }
-  // 非管理员隐藏 admin-only 元素
-  if (!UserAuth.isAdmin) {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  }
-  // 加载用户列表预览
-  if (UserAuth.isAdmin) {
-    UserAuth.listUsers().then(users => {
-      const el = document.getElementById('user-list-preview');
-      if (el) el.textContent = users.map(u => u.username + (u.role === 'admin' ? '★' : '')).join('、');
-    });
-  }
-}
-
-function openUserMgr() {
-  const list = prompt('用户列表（输入新用户名创建，默认密码 123456）：', '(加载中...)');
-  // 简化：直接弹创建框
-  const newUser = prompt('创建新用户\n用户名：');
-  if (!newUser) return;
-  const newName = prompt('显示昵称（可留空）：') || newUser;
-  UserAuth.createUser(newUser.trim(), newName.trim()).then(r => {
-    if (r.ok) { showToast('用户 ' + newUser + ' 已创建，初始密码 123456', 'success'); location.reload(); }
-    else showToast(r.msg, 'error');
-  });
-}
-
 async function boot() {
-  // 0) 未登录则显示登录页
-  UserAuth.init();
-  CloudSync.init();
-  if (!UserAuth.current) {
-    const ls = document.getElementById('login-screen');
-    ls.classList.remove('hidden');
-    ls.classList.add('flex');
-    UserAuth.genCaptchaLabel = function() {
-      document.getElementById('login-captcha-label').textContent = this.genCaptcha();
-    };
-    UserAuth.genCaptchaLabel();
-    document.getElementById('app-loading').style.display = 'none';
-    return;
-  }
-
   // 1) 异步拉取 IndexedDB 数据 —— 必须先于任何渲染（ECharts / 表单）完成
   let saved = null;
   try {
@@ -13804,17 +13616,11 @@ async function boot() {
   CloudSync.init();
   try { await CloudSync.pull(); } catch (e) { console.warn('[CloudSync] pull 异常：', e); }
 
-  // 10) 权限过滤：隐藏非管理员功能
-  applyRoleGating();
+  // 10) 恢复上次所在视图（此时数据已就绪，可安全渲染所有图表）
+  switchView(AppState.meta.currentView || 'dashboard');
 
-  // 11) 恢复上次所在视图（此时数据已就绪，可安全渲染所有图表）
-  // 非管理员不允许进入书生观向页，强制回 dashboard
-  const startView = (UserAuth.isAdmin && AppState.meta.currentView) ? AppState.meta.currentView : 'dashboard';
-  switchView(startView);
-
-  // 每次打开先进入锁屏（仅管理员需要书生观向锁屏）
-  if (UserAuth.isAdmin) lockScreen();
-  else hideLoading();
+  // 每次打开先进入锁屏
+  lockScreen();
 
   // 首屏渲染完成后淡出加载遮罩
   requestAnimationFrame(() => setTimeout(hideLoading, 80));

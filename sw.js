@@ -4,7 +4,7 @@
  *  2. 运行时 stale-while-revalidate：先读缓存，后台更新
  *  3. 不缓存 POST 请求和 API 调用
  */
-const CACHE_NAME = 'sumeru-v1';
+const CACHE_NAME = 'sumeru-v3';
 const CORE_ASSETS = [
   './',
   './SumeruRealm.html',
