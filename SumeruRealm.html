@@ -2012,6 +2012,16 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               </div>
             </div>
 
+            <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+              <div class="flex items-center justify-between px-3 py-2">
+                <span class="text-[11px] font-semibold text-slate-600">隐藏书生观向</span>
+                <label class="relative inline-flex cursor-pointer items-center">
+                  <input type="checkbox" id="setting-hide-bazi" class="peer sr-only" onchange="toggleHideBazi(this)">
+                  <div class="h-5 w-9 rounded-full bg-slate-300 transition peer-checked:bg-primary after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4"></div>
+                </label>
+              </div>
+            </div>
+
             <!-- 危险操作（独立红框隔离，与上方设置彻底分开） -->
             <div class="mx-3.5 my-2.5 overflow-hidden rounded-lg border border-sky-200 bg-sky-50">
               <div class="flex items-center justify-between px-3 py-2">
@@ -6413,7 +6423,7 @@ function renderOntologyGraph() {
     guide = document.createElement('div');
     guide.id = 'onto-guide';
     guide.className = 'pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center bg-white/40 px-6 pb-24 text-center backdrop-blur-[1px]';
-    guide.innerHTML = '<p class="font-serif text-lg font-semibold tracking-[0.2em] text-slate-600">灵台尚空，以待万象</p>'
+    guide.innerHTML = '<p class="font-serif text-lg font-semibold tracking-[0.2em] text-slate-600">星野尚空，以待万象</p>'
       + '<p class="mt-2 max-w-md text-[12px] leading-relaxed text-slate-500">去【迷局推演】向书生提问，或在【微光集】点击【沉淀星盘】，皆可在此点亮你的认知节点。</p>';
     canvas.appendChild(guide);
   }
@@ -8380,6 +8390,20 @@ function toggleLogoSpin(checkbox) {
   AppState.settings.logoSpin = checkbox.checked;
   saveState();
   showToast(checkbox.checked ? 'Logo 动效已开启' : 'Logo 动效已关闭', 'info');
+}
+
+/** 隐藏/显示书生观向菜单 */
+function toggleHideBazi(checkbox) {
+  if (!AppState.settings) AppState.settings = {};
+  AppState.settings.hideBazi = checkbox.checked;
+  saveState();
+  applyHideBazi();
+  showToast(checkbox.checked ? '书生观向已隐藏' : '书生观向已显示', 'info');
+}
+
+function applyHideBazi() {
+  const btn = document.querySelector('[data-view="biorhythm"]');
+  if (btn) btn.style.display = (AppState.settings && AppState.settings.hideBazi) ? 'none' : '';
 }
 
 /** 点 Logo：大圆展开，Logo 居中停一会再散 */
@@ -11025,6 +11049,8 @@ function startMeteorLoop() {
 /** 自动巡航船循环：一艘接一艘，不定期有鱼带路 */
 let autoBoatTimer = null;
 function startAutoBoatLoop() {
+  if (window.__boatLoopStarted) return;
+  window.__boatLoopStarted = true;
   if (autoBoatTimer) clearTimeout(autoBoatTimer);
   const container = document.getElementById('nightboat-auto');
   if (!container) return;
@@ -13458,6 +13484,11 @@ async function boot() {
   // 同步工具箱开关
   const spinCb = document.getElementById('setting-logo-spin');
   if (spinCb) spinCb.checked = AppState.settings.logoSpin;
+  // 隐藏书生观向：默认开启隐藏
+  if (typeof AppState.settings.hideBazi !== 'boolean') AppState.settings.hideBazi = true;
+  const baziCb = document.getElementById('setting-hide-bazi');
+  if (baziCb) baziCb.checked = AppState.settings.hideBazi;
+  applyHideBazi();
   if (!Array.isArray(AppState.audit_logs)) AppState.audit_logs = [];
 
   // 夜间须弥配色：强制开关优先，否则按 18:00 - 06:00 自动判断
