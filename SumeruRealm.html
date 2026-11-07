@@ -26,12 +26,20 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 
 <!-- ==================== CDN 依赖 ==================== -->
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+// 过滤 Tailwind CDN 的生产环境警告
+const _warn = console.warn;
+console.warn = function(...args) {
+  if (args[0] && String(args[0]).includes('cdn.tailwindcss.com should not be used in production')) return;
+  _warn.apply(console, args);
+};
+</script>
+<script src="lib/echarts.min.js"></script>
+<script src="lib/marked.min.js"></script>
 <!-- IndexedDB 轻量封装库（UMD 构建，暴露 window.idb） -->
-<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+<script src="lib/idb.js"></script>
 <!-- Supabase JS SDK（云端同步） -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase.min.js"></script>
 
 <!-- ==================== Tailwind 主题配置 ==================== -->
 <script>
@@ -796,6 +804,40 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   .md-body th, .md-body td { border: 1px solid #e2e8f0; padding: 5px 9px; text-align: left; }
   .md-body th { background: rgba(8, 145, 178, 0.06); color: #0e7490; }
 
+  /* ========== 流年日历：本月呼吸光环 ========== */
+  @keyframes calPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+  }
+  .cal-pulse { animation: calPulse 1s ease-in-out 3; }
+
+  /* ========== 手机端适配 ========== */
+  @media (max-width: 768px) {
+    .glass-card { padding: 12px !important; }
+    #main-scroll { padding: 12px !important; }
+    .nav-item span.sb-hide { display: none; }
+    #live-clock { display: none !important; }
+  }
+
+  /* 日历紧凑模式：隐藏农历标签 */
+  .cal-compact .rounded-lg { padding: 6px !important; }
+  .cal-compact .h-10 { height: 18px !important; font-size: 10px !important; }
+  .cal-compact .h-10 span:last-child { display: none !important; }
+  .cal-compact .text-[12px] { font-size: 10px !important; }
+  .cal-compact .text-center { margin-bottom: 2px !important; }
+
+  /* 时光如水动效 */
+  @keyframes waterFlow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .water-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(13,148,136,0.3), transparent);
+    animation: waterFlow 8s linear infinite;
+  }
+
   /* ========== 九维时间窗口（书生观向） ========== */
   #time-cards {
     overflow: hidden;
@@ -1316,7 +1358,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     offset-path: path('M 10 340 C 150 -60 610 -60 750 340');
     offset-rotate: 0deg;
     offset-distance: 0%;
-    animation: walkTheArch 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: walkTheArch 48s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .bagua-spin {
     display: inline-block;
@@ -1364,7 +1406,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     color: #94a3b8;
     opacity: 0.25;
     pointer-events: none;
-    animation: pacePoet 20s ease-in-out infinite;
+    animation: pacePoet 40s ease-in-out infinite;
   }
   .poet svg { display: block; width: 30px; height: 30px; }
 
@@ -1390,8 +1432,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     pointer-events: none;
     will-change: transform, opacity;
   }
-  .poet-quote-left  { left: calc(20% - 22px); animation: quoteFloatLeft 20s ease-in-out infinite; }
-  .poet-quote-right { left: calc(80% - 22px); animation: quoteFloatRight 20s ease-in-out infinite; }
+  .poet-quote-left  { left: calc(20% - 22px); animation: quoteFloatLeft 40s ease-in-out infinite; }
+  .poet-quote-right { left: calc(80% - 22px); animation: quoteFloatRight 40s ease-in-out infinite; }
 
   @keyframes quoteFloatLeft {
     0%         { opacity: 0;    transform: translateY(6px); }
@@ -1753,6 +1795,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         <span class="sb-hide">日拱一卒</span>
       </button>
 
+      <button data-view="calendar" title="流年日历" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <svg class="nav-icon w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="sb-hide">流年日历</span>
+      </button>
+
       <button data-view="vision" title="向光而行" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
         <svg class="nav-icon w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
         <span class="sb-hide">向光而行</span>
@@ -1783,9 +1830,9 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         <span class="sb-hide">明师指路</span>
       </button>
 
-      <button data-view="ai-analysis" title="迷局推演" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+      <button data-view="ai-analysis" title="秉烛问局" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
         <svg class="nav-icon w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-        <span class="sb-hide">迷局推演</span>
+        <span class="sb-hide">秉烛问局</span>
       </button>
 
       <button data-view="biorhythm" title="书生观向" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
@@ -1847,19 +1894,21 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
           class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-white transition-colors hover:border-white/50 hover:bg-white/20">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-        <!-- 武汉天气与日出日落 -->
-        <div id="weather-widget" class="hidden xl:block whitespace-nowrap rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] text-white/90" title="武汉天气数据加载中…">
-          🌤 武汉天气加载中…
-        </div>
-
-        <!-- 实时时钟（每秒跳动） -->
-        <span id="live-clock" class="hidden lg:block font-mono text-[12px] tabular-nums text-white/90"></span>
 
         <!-- 一键锁屏（Ctrl + Alt + L） -->
         <button onclick="lockScreen()" title="一键锁屏（Ctrl+Alt+L）"
           class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-[14px] leading-none text-white transition-colors hover:border-white/50 hover:bg-white/20">
           🔒
         </button>
+
+        <!-- 全屏切换 -->
+        <button onclick="toggleFullscreen()" title="全屏"
+          class="flex h-9 w-9 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-[14px] leading-none text-white transition-colors hover:border-white/50 hover:bg-white/20">
+          ⛶
+        </button>
+
+        <!-- 实时时钟（每秒跳动） -->
+        <span id="live-clock" class="hidden lg:block font-mono text-[12px] tabular-nums text-white/90"></span>
 
         <!-- 工具箱（运行时迁移到侧边栏底部） -->
         <div class="relative" id="toolbox-wrap">
@@ -2595,7 +2644,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               </svg>
               <span class="fuchen-sparkle text-[9px] leading-none" style="position:relative;left:-8px;top:6px;">✨</span>
             </div>
-            <p class="font-serif text-[12px] tracking-[0.18em] text-slate-500">观象台 · 迷局推演</p>
+            <p class="font-serif text-[12px] tracking-[0.18em] text-slate-500">观象台 · 秉烛问局</p>
             <button onclick="clearAiConsole()" title="拂尘清零" class="flex items-center transition-colors hover:opacity-70">
               <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
                 <path d="M3 14 Q2 6 8 3 Q6 8 8 13 Q5 14 3 14 Z" fill="#8b7355" stroke="#6b5540" stroke-width="0.8"/>
@@ -2745,8 +2794,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
           <!-- 九维时间窗口：流时 / 流日 / 流月 / 近三月 / 近半年 / 近一年 / 近两年 / 近五年 / 近十年 -->
           <div class="mb-5">
             <div class="mb-3">
-              <p id="solar-term-line" class="text-[11px] text-slate-400"></p>
-              <h4 class="mt-1 text-sm font-semibold text-slate-800">九维时间窗口 · 由近及远</h4>
+              <h4 class="text-sm font-semibold text-slate-800">九维时间窗口 · 由近及远</h4>
               <p class="mt-0.5 text-[11px] text-slate-400">流时 → 流日 → 流月 → 近三个月 → 近半年 → 近一年 → 近两年 → 近五年 → 近十年 · 一屏三卡 · 箭头切换</p>
             </div>
             <div id="time-cards" class="relative overflow-hidden">
@@ -2764,28 +2812,30 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               <h4 class="text-sm font-semibold">本盘推演记录</h4>
               <span id="bazi-history-count" class="text-[11px] text-slate-400"></span>
             </div>
+            <input id="bazi-history-search" oninput="renderBaziHistory()" placeholder="搜索推演记录…" class="io-input mb-2 w-full text-[12px]" />
             <div id="bazi-history-list" class="space-y-2"></div>
           </div>
 
-          <!-- 五行能量条 -->
-        <div class="glass-card glow-border mb-5 p-6">
+          <!-- 五行能量条 + 周期波动图 左右并排 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        <div class="glass-card glow-border p-6">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <h3 class="text-lg font-bold text-slate-800">五行能量 · 当前相位</h3>
-              <p class="mt-1 text-sm text-slate-400">模拟能量场：五行旺衰叠加三重生物节律，输出当前相位的行动参照。</p>
+              <h3 class="text-lg font-bold text-slate-800">今日五行能量</h3>
+              <p class="mt-1 text-sm text-slate-400">今天哪行旺、哪行弱，一眼看清。</p>
             </div>
             <span id="phase-badge" class="shrink-0 rounded-full border px-3 py-1 text-[11px]"></span>
           </div>
           <div id="element-bars" class="mt-5 space-y-3"></div>
         </div>
 
-        <!-- 周期波动图 -->
-        <div class="glass-card mb-5 p-5">
+        <div class="glass-card p-5">
           <div class="mb-3 flex items-center justify-between">
             <h4 class="text-sm font-semibold">近 30 天周期波动图</h4>
-            <span class="text-[11px] text-slate-500">体力 23 天 / 情绪 28 天 / 智力 33 天周期叠加</span>
+            <span class="text-[11px] text-slate-500">体力 23 / 情绪 28 / 智力 33</span>
           </div>
           <div id="chart-biorhythm" class="h-[280px] w-full"></div>
+        </div>
         </div>
 
         <!-- 策略卡片 -->
@@ -2834,11 +2884,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
           <!-- 自动巡航船 -->
           <div id="nightboat-auto" class="absolute bottom-10 left-0 right-0 pointer-events-none overflow-visible"></div>
 
-          <!-- 控制按钮 -->
-          <div class="absolute top-24 right-10 z-20 flex flex-col gap-2 nightboat-ctrl">
-            <button id="nightboat-full-btn" onclick="toggleNightboatFull()" title="全屏"
+          <!-- 控制按钮（月亮正下方居中） -->
+          <div class="absolute top-24 z-20 flex flex-col gap-2 nightboat-ctrl" style="right: 60px;">
+            <button onclick="toggleNightboatUI()" title="隐藏菜单与顶栏"
               class="flex h-7 w-7 items-center justify-center rounded-full border border-amber-100/20 text-amber-100">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
             <button id="nightboat-clean-btn" onclick="toggleNightboatClean()" title="清屏 · 只留夜景"
               class="flex h-7 w-7 items-center justify-center rounded-full border border-amber-100/20 text-amber-100">
@@ -2861,6 +2911,12 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               </div>
             </div>
 
+            <!-- 本周航图 -->
+            <div class="mt-6 rounded-xl border border-amber-100/15 bg-white/5 backdrop-blur-sm p-5">
+              <p class="text-[11px] text-amber-100/60 tracking-wider">本周航图</p>
+              <div id="nightboat-week" class="mt-3"></div>
+            </div>
+
             <!-- 过往航迹时间线 -->
             <div class="mt-8">
               <p class="text-[11px] text-amber-100/50 tracking-wider mb-3">—— 过往航迹 ——</p>
@@ -2869,6 +2925,59 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
           </div>
         </div>
       </section>
+
+      <!-- ========== 视图：流年日历 ========== -->
+      <section id="view-calendar" class="view-panel hidden">
+        <div class="glass-card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-slate-800">流年日历</h2>
+              <p class="mt-0.5 text-[11px] text-slate-400">点日期写一句，有标记的日子画了圈</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="cal-view-btn" onclick="calToggleView()" title="切换全年/当月视图"
+                class="rounded-lg border border-slate-200 px-2 py-1 text-[12px] text-slate-500 hover:bg-slate-100">▦ 全年</button>
+              <button onclick="calYearOffset(-1)" class="rounded-lg border border-slate-200 px-2 py-1 text-[12px] text-slate-500 hover:bg-slate-100">‹ 去年</button>
+              <span id="cal-year-label" class="text-sm font-semibold text-slate-600"></span>
+              <button onclick="calYearOffset(1)" class="rounded-lg border border-slate-200 px-2 py-1 text-[12px] text-slate-500 hover:bg-slate-100">明年 ›</button>
+            </div>
+          </div>
+          <div id="calendar-grid" class="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- 老黄历弹窗 -->
+      <div id="almanac-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30" onclick="if(event.target===this)closeAlmanac()">
+        <div class="w-80 rounded-xl bg-white p-5 shadow-xl">
+          <p id="almanac-date" class="text-sm font-bold text-slate-800"></p>
+          <div id="almanac-yi" class="mt-3 rounded-lg bg-amber-50 p-3"></div>
+          <div class="mt-3 text-right">
+            <button onclick="closeAlmanac()" class="rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-white hover:brightness-110">知道了</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 日期备注弹窗 -->
+      <div id="cal-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30" onclick="if(event.target===this)closeCalModal()">
+        <div class="w-96 rounded-xl bg-white p-5 shadow-xl">
+          <p id="cal-modal-date" class="text-sm font-bold text-slate-800"></p>
+          <textarea id="cal-modal-note" rows="3" placeholder="这一天发生了什么…" class="io-input mt-3 w-full resize-none"></textarea>
+          <div class="mt-2 flex gap-1">
+            <span class="text-[11px] text-slate-400 self-center mr-1">心情：</span>
+            <button onclick="setCalMood(this,'😄')" class="cal-mood-btn rounded-full px-2 py-0.5 text-[12px] hover:bg-slate-100">😄</button>
+            <button onclick="setCalMood(this,'😐')" class="cal-mood-btn rounded-full px-2 py-0.5 text-[12px] hover:bg-slate-100">😐</button>
+            <button onclick="setCalMood(this,'😔')" class="cal-mood-btn rounded-full px-2 py-0.5 text-[12px] hover:bg-slate-100">😔</button>
+            <button onclick="setCalMood(this,'🔥')" class="cal-mood-btn rounded-full px-2 py-0.5 text-[12px] hover:bg-slate-100">🔥</button>
+            <button onclick="setCalMood(this,'🌙')" class="cal-mood-btn rounded-full px-2 py-0.5 text-[12px] hover:bg-slate-100">🌙</button>
+          </div>
+          <div class="mt-3 flex justify-end gap-2">
+            <button onclick="askScholarDay()" class="mr-auto rounded-lg border border-amber-200 px-3 py-1.5 text-[12px] text-amber-600 hover:bg-amber-50">✨ 当日运势</button>
+            <button onclick="deleteCalNote()" class="rounded-lg border border-rose-200 px-3 py-1.5 text-[12px] text-rose-500 hover:bg-rose-50">删除</button>
+            <button onclick="closeCalModal()" class="rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] text-slate-500 hover:bg-slate-50">取消</button>
+            <button onclick="saveCalNote()" class="rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-white hover:brightness-110">保存</button>
+          </div>
+        </div>
+      </div>
 
       <!-- ========== 视图 8：藏珍秘阁 ========== -->
       <section id="view-favorites" class="view-panel hidden">
@@ -2888,9 +2997,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               <span class="treasure-item" title="丹丸 · 火候将成">⚱️</span>
               <span class="treasure-item" title="竹符 · 山中旧约">🎋</span>
             </div>
-            <div class="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[11px]">
-              <button id="fav-tab-dilemma" onclick="setFavoriteTab('dilemma')" class="rounded-md px-2.5 py-1 transition-colors">迷局推演</button>
-              <button id="fav-tab-scholar" onclick="setFavoriteTab('scholar')" class="rounded-md px-2.5 py-1 transition-colors">观向问答</button>
+            <div class="flex items-center gap-2">
+              <input id="fav-search" oninput="renderFavorites()" placeholder="搜问题或回答…"
+                class="io-input w-40 text-[12px]" />
+              <div class="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[11px]">
+                <button id="fav-tab-dilemma" onclick="setFavoriteTab('dilemma')" class="rounded-md px-2.5 py-1 transition-colors">秉烛问局</button>
+                <button id="fav-tab-scholar" onclick="setFavoriteTab('scholar')" class="rounded-md px-2.5 py-1 transition-colors">观向问答</button>
+              </div>
             </div>
           </div>
           <div id="favorite-list" class="mt-4 grid grid-cols-1 gap-3"></div>
@@ -2926,7 +3039,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               <option value="已兑现">已兑现</option>
             </select>
             <div class="flex items-center gap-2 md:col-span-2">
-              <button type="submit" class="ml-auto rounded-lg bg-gradient-to-r from-amber-400 to-orange-400 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-amber-400/30 transition hover:brightness-110">✨ 种下这道光</button>
+              <button type="submit" class="ml-auto rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-teal-500/20 transition hover:brightness-110">✨ 种下这道光</button>
             </div>
           </form>
         </div>
@@ -3022,7 +3135,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
               <textarea id="mt-action" rows="3" maxlength="300" placeholder="对我的启发与行动" class="io-input resize-none"></textarea>
               <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-primary/90 to-primary py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110">＋ 存入智慧库</button>
             </form>
-            <p class="mt-2 text-[10px] leading-relaxed text-slate-400">智慧库会自动注入书生与迷局推演的上下文（取最近 5 条，并优先匹配相关记录）。</p>
+            <p class="mt-2 text-[10px] leading-relaxed text-slate-400">智慧库会自动注入书生与秉烛问局的上下文（取最近 5 条，并优先匹配相关记录）。</p>
           </div>
 
           <div class="xl:col-span-2">
@@ -3655,7 +3768,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     <p class="mt-1 text-[11px] text-slate-400">基于当前节点与关系，由 DeepSeek 实时流式解析</p>
     <div id="onto-ai-body" class="md-body mt-3 max-h-[62vh] overflow-y-auto"></div>
     <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-      <span class="text-[10px] text-slate-400">解析结果将同步注入【迷局推演】上下文</span>
+      <span class="text-[10px] text-slate-400">解析结果将同步注入【秉烛问局】上下文</span>
       <button onclick="exportOntologyAnalysis()"
         class="rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary transition hover:bg-primary/20">⬇ 导出为 .md 文件</button>
     </div>
@@ -3936,7 +4049,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       </div>
     </div>
     <div class="flex items-center gap-1.5">
-      <button onclick="openToolboxForApiKey()" title="配置 DeepSeek API Key"
+      <button id="scholar-config-btn" onclick="openToolboxForApiKey()" title="配置 DeepSeek API Key"
         class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-500 transition-colors hover:border-primary/40 hover:text-primary">⚙️ 配置</button>
       <button id="scholar-clear-btn" onclick="clearScholarConversation()" title="清空当前对话" aria-label="清空当前对话"
         class="rounded-lg p-1.5 text-slate-400 transition-colors hover:text-rose-500">
@@ -3966,8 +4079,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   <!-- 输入区 -->
   <div id="scholar-input-bar" class="relative z-[1] border-t border-slate-200 p-3">
     <div class="flex gap-2">
-      <input id="scholar-input" type="text" maxlength="300" placeholder="向书生提问，如：我近期适合跳槽吗？" class="io-input flex-1" />
-      <button id="scholar-send-btn" onclick="sendScholarQuestion()" class="shrink-0 rounded-lg bg-gradient-to-br from-primary to-accent px-4 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed">问</button>
+      <button onclick="guessScholarQuestion()" title="猜你想问"
+        class="shrink-0 rounded-lg border border-amber-300/40 bg-amber-50 px-3 text-sm transition hover:bg-amber-100 disabled:opacity-40"
+        style="color:#b45309">猜</button>
+      <textarea id="scholar-input" rows="2" maxlength="500" placeholder="向书生提问，如：我近期适合跳槽吗？" class="io-input flex-1 resize-none"></textarea>
+      <button id="scholar-send-btn" onclick="sendScholarQuestion()" class="shrink-0 rounded-lg bg-gradient-to-br from-amber-600 to-amber-800 px-4 text-sm font-bold text-amber-50 transition hover:brightness-110 disabled:cursor-not-allowed">问</button>
     </div>
     <button id="scholar-config-hint" onclick="openToolboxForApiKey()"
       class="mt-2 hidden w-full text-center text-[11px] text-primary underline-offset-2 transition-colors hover:underline">👉 点击此处前往配置 API Key</button>
@@ -5277,10 +5393,11 @@ const VIEW_META = {
   'leisure':      { title: '闲书雅趣', sub: 'LEISURE READING' },
   'books':        { title: '琅嬛书廊', sub: 'BOOK LEDGER' },
   'projects':     { title: '造化工坊', sub: 'SIDE PROJECTS' },
-  'ai-analysis':  { title: '迷局推演', sub: 'DILEMMA ANALYSIS' },
+  'ai-analysis':  { title: '秉烛问局',   sub: 'DILEMMA ANALYSIS' },
   'biorhythm':    { title: '书生观向', sub: 'SCHOLAR DIVINATION' },
   'favorites':    { title: '藏珍秘阁',   sub: 'FAVORITES' },
   'nightboat':     { title: '夜航归棹',   sub: 'NIGHT VOYAGE' },
+  'calendar':      { title: '流年日历',   sub: 'YEARLY CALENDAR' },
   'moments':      { title: '微光集', sub: 'FLEETING MOMENTS' },
   'mentors':      { title: '明师指路', sub: 'MENTOR WISDOM' },
   'decisions':    { title: '知行实证', sub: 'DECISION EVIDENCE' },
@@ -5339,6 +5456,7 @@ function renderView(viewId) {
     case 'biorhythm':    renderBiorhythm();   break;
     case 'favorites':    renderFavorites();   break;
     case 'nightboat':     renderNightboat();    document.getElementById('main-scroll').style.background = '#1e3a4a'; break;
+    case 'calendar':      renderCalendar();     break;
     case 'moments':      renderMoments();     break;
     case 'mentors':      renderMentors();     break;
     case 'decisions':    renderDecisions();   break;
@@ -6424,7 +6542,7 @@ function renderOntologyGraph() {
     guide.id = 'onto-guide';
     guide.className = 'pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center bg-white/40 px-6 pb-24 text-center backdrop-blur-[1px]';
     guide.innerHTML = '<p class="font-serif text-lg font-semibold tracking-[0.2em] text-slate-600">星野尚空，以待万象</p>'
-      + '<p class="mt-2 max-w-md text-[12px] leading-relaxed text-slate-500">去【迷局推演】向书生提问，或在【微光集】点击【沉淀星盘】，皆可在此点亮你的认知节点。</p>';
+      + '<p class="mt-2 max-w-md text-[12px] leading-relaxed text-slate-500">去【秉烛问局】向书生提问，或在【微光集】点击【沉淀星盘】，皆可在此点亮你的认知节点。</p>';
     canvas.appendChild(guide);
   }
   // 只有「我」+ 六个中枢、尚无任何内容节点时，才算空盘
@@ -6688,11 +6806,14 @@ function startClock() {
   const el = document.getElementById('live-clock');
   if (!el) return;
   const week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const shichen = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const p = n => String(n).padStart(2, '0');
   const tick = () => {
     const d = new Date();
+    const h = d.getHours();
+    const sc = shichen[Math.floor(((h + 1) % 24) / 2)];
     el.textContent = (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
-      week[d.getDay()] + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+      week[d.getDay()] + ' ' + p(h) + ':' + p(d.getMinutes()) + ' ' + sc + '时';
   };
   tick();
   setInterval(tick, 10000);
@@ -7466,7 +7587,7 @@ function unlockScreen(immediate) {
     const last = AppState.meta && AppState.meta.lastBackupTime;
     const overdue = !last || (Date.now() - new Date(last).getTime() > 7 * 86400000);
     if (overdue) {
-      setTimeout(() => showToast('🔔 数据无价，建议在工具箱中导出 JSON 备份。', 'info'), 400);
+      // 备份提醒已去掉
     }
   } catch (e) { /* 忽略 */ }
 }
@@ -7530,7 +7651,13 @@ function renderMorningBrief(content) {
     const hFort = _SHORT_FORTUNE[hEl];
     const hourText = hFort ? '（' + h.gan + h.zhi + '时 · ' + hEl + '旺 · ' + hFort.hour + '）' : '';
     const lineEl = document.getElementById('morning-fortune-line');
-    if (lineEl) lineEl.textContent = dayText + (dayText && hourText ? '  ' : '') + hourText;
+    if (lineEl) {
+      let line = dayText + (dayText && hourText ? '  ' : '') + hourText;
+      // 加节气信息
+      const term = getCurrentSolarTerm();
+      if (term) line += '  ｜ 今日' + term.current + '，' + term.fortune;
+      lineEl.textContent = line;
+    }
   } catch (e) {}
   startDashClock();
 }
@@ -8404,6 +8531,10 @@ function toggleHideBazi(checkbox) {
 function applyHideBazi() {
   const btn = document.querySelector('[data-view="biorhythm"]');
   if (btn) btn.style.display = (AppState.settings && AppState.settings.hideBazi) ? 'none' : '';
+  // 如果当前正在书生观向页且开关已开，切回须弥观止
+  if (AppState.settings && AppState.settings.hideBazi && AppState.meta && AppState.meta.currentView === 'biorhythm') {
+    switchView('dashboard');
+  }
 }
 
 /** 点 Logo：大圆展开，Logo 居中停一会再散 */
@@ -8842,7 +8973,7 @@ let rejectDraft = { question: '', answer: '', bubble: null, bar: null };
 const PLAIN_TEXT_RULE = '【排版要求】：禁止使用任何 Markdown 语法（包括但不限于 **加粗**、# 标题、- 列表、> 引用、代码块）。请直接使用纯文本，按自然段落输出。如果需要分点，请使用「一、」「二、」「三、」或直接换行，保持古雅、极简的阅读体验。';
 
 /** 迷局推演专属 System Prompt */
-const DILEMMA_SYSTEM_PROMPT = '你是一位深谙《道德经》与数据治理哲学的个人导师。请对用户的困境进行多维穿透分析。不要给空洞的安慰，要给出：一、认知层（战略/长期价值） 二、流程层（时间/精力分配） 三、执行层（技术与具体动作）。最后用一段极简的古文或哲思作为总结。' + PLAIN_TEXT_RULE;
+const DILEMMA_SYSTEM_PROMPT = '你是一位见过世面的个人教练，像跟朋友喝茶聊天那样帮用户分析困境。不要讲古文，不要拽词。按三层说：一、认知层（这事从长远看本质是什么） 二、流程层（时间精力该怎么分） 三、执行层（具体先做什么后做什么）。结论要干脆，别绕弯子。不要空洞安慰。' + PLAIN_TEXT_RULE;
 
 /** 星罗棋布最新解析 → 迷局推演的认知状态上下文 */
 function buildOntologyContext() {
@@ -8870,7 +9001,7 @@ function appendConsoleSystem() {
   const n = AppState.aiAnalysis.reports.length;
   document.getElementById('ai-console').innerHTML = `
     <div class="font-serif text-[13px] leading-relaxed text-slate-600">
-      <p><span class="font-serif text-primary">【观象】</span>迷局推演阵已启。请君落笔，吾将为你破开迷雾，从认知、流程、执行三层为你推演。</p>
+      <p><span class="font-serif text-primary">【观象】</span>秉烛问局阵已启。请君落笔，吾将为你破开迷雾，从认知、流程、执行三层为你推演。</p>
       <p class="mt-1.5 text-[12px] text-slate-400">${n > 0 ? '已载入 <span class="font-serif text-primary">' + n + '</span> 条旧局残卷。' : '尚无旧局残卷。'}
         <span class="ml-1">吾以纯文直叙：<span class="font-serif text-[#2B9FAC]">一、认知层</span> · <span class="font-serif text-[#7C6BB0]">二、流程层</span> · <span class="font-serif text-[#9A7B5F]">三、执行层</span>，不设符号与表格。</span></p>
     </div>`;
@@ -9202,28 +9333,131 @@ function switchBaziProfile(id) {
   showToast('已切换命盘：' + target.name, 'success');
 }
 
-/** 本盘历史记录（按 bazi_id 隔离） */
+/** 本盘历史记录（按 bazi_id 隔离，分页3条） */
+let baziHistPage = 0;
+const BAZI_PAGE_SIZE = 6;
+let baziHistOnlyStarred = false;
 function renderBaziHistory() {
   const box = document.getElementById('bazi-history-list');
   const countEl = document.getElementById('bazi-history-count');
   if (!box || !countEl) return;
   const currentId = getActiveBaziProfile().id;
-  const list = (Array.isArray(AppState.bazi_history) ? AppState.bazi_history : [])
-    .filter(h => h && h.bazi_id === currentId)
-    .slice(0, 5);
-  countEl.textContent = list.length ? ('仅显示本盘 ' + list.length + ' 条') : '';
+  let all = (Array.isArray(AppState.bazi_history) ? AppState.bazi_history : [])
+    .filter(h => h && h.bazi_id === currentId);
+  const kw = (document.getElementById('bazi-history-search')?.value || '').trim().toLowerCase();
+  if (kw) all = all.filter(h => (h.question || '').toLowerCase().includes(kw) || (h.answer || '').toLowerCase().includes(kw));
+  const list = baziHistOnlyStarred ? all.filter(h => h.starred) : all;
+  const totalPages = Math.ceil(list.length / BAZI_PAGE_SIZE) || 1;
+  if (baziHistPage >= totalPages) baziHistPage = totalPages - 1;
+  if (baziHistPage < 0) baziHistPage = 0;
+  countEl.innerHTML = `
+    <span>本盘共 ${all.length} 条</span>
+    <label class="ml-2 inline-flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+      <input type="checkbox" ${baziHistOnlyStarred?'checked':''} onchange="baziHistOnlyStarred=this.checked;baziHistPage=0;renderBaziHistory()"> 仅看⭐重点
+    </label>
+    <button onclick="clearBaziHistory()" class="ml-2 text-[10px] text-rose-400 hover:text-rose-600 underline underline-offset-2">清空记录</button>`;
   if (!list.length) {
     box.innerHTML = '<p class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-[12px] text-slate-400">本盘暂无推演记录 —— 向书生提问后会自动留痕。</p>';
     return;
   }
-  box.innerHTML = list.map(h => `
-    <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+  const pageList = list.slice(baziHistPage * BAZI_PAGE_SIZE, (baziHistPage + 1) * BAZI_PAGE_SIZE);
+  let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
+  pageList.forEach((h, i) => {
+    const idx = baziHistPage * BAZI_PAGE_SIZE + i;
+    html += `
+    <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 cursor-pointer hover:border-primary/30 transition-colors" onclick="toggleBaziHist(${idx})">
       <div class="flex items-start justify-between gap-3">
         <p class="text-[12px] font-semibold text-slate-700">${escapeHtml(h.question)}</p>
         <span class="shrink-0 text-[10px] text-slate-400">${new Date(h.at).toLocaleDateString('zh-CN')}</span>
       </div>
-      <p class="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">${escapeHtml(String(h.answer || '').slice(0, 180))}</p>
-    </div>`).join('');
+      <div id="bazi-hist-preview-${idx}" class="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">${escapeHtml(String(h.answer || '').slice(0, 180))}</div>
+      <div id="bazi-hist-full-${idx}" class="mt-1 hidden whitespace-pre-wrap text-[11px] leading-relaxed text-slate-600">${escapeHtml(h.answer || '')}</div>
+      <div id="bazi-hist-actions-${idx}" class="mt-2 hidden flex items-center gap-3">
+        <button onclick="event.stopPropagation();reaskHistoryQuestion('${escapeHtml(h.question).replace(/'/g,"\\'")}')" class="text-[10px] text-primary hover:underline">↻ 再问一次</button>
+        <button onclick="event.stopPropagation();toggleStarBazi('${h.id}')" class="text-[10px] ${h.starred?'text-amber-500':'text-slate-400'} hover:text-amber-500">${h.starred?'⭐ 已标重点':'☆ 标为重点'}</button>
+        <button onclick="event.stopPropagation();deleteBaziHist('${h.id}')" class="text-[10px] text-rose-400 hover:text-rose-600">🗑 删除</button>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  if (totalPages > 1) {
+    html += `<div class="mt-3 flex items-center justify-center gap-2 text-[11px] text-slate-500">
+      <button onclick="baziHistPage=0;renderBaziHistory()" class="px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-100" ${baziHistPage===0?'disabled style="opacity:0.3"':''}>首页</button>
+      <button onclick="baziHistPage=${Math.max(0,baziHistPage-1)};renderBaziHistory()" class="px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-100" ${baziHistPage===0?'disabled style="opacity:0.3"':''}>上一页</button>
+      <span>${baziHistPage+1} / ${totalPages}</span>
+      <button onclick="baziHistPage=${Math.min(totalPages-1,baziHistPage+1)};renderBaziHistory()" class="px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-100" ${baziHistPage===totalPages-1?'disabled style="opacity:0.3"':''}>下一页</button>
+      <button onclick="baziHistPage=${totalPages-1};renderBaziHistory()" class="px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-100" ${baziHistPage===totalPages-1?'disabled style="opacity:0.3"':''}>尾页</button>
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+
+function clearBaziHistory() {
+  const currentId = getActiveBaziProfile().id;
+  const list = (AppState.bazi_history || []).filter(h => h && h.bazi_id === currentId);
+  if (!list.length) return;
+  const choice = prompt(
+    '清空记录 — 请选择范围：\n\n' +
+    '输入数字：\n' +
+    '  1 = 全部清空\n' +
+    '  2 = 清空一半（留最近一半）\n' +
+    '  3 = 删除最早10条\n' +
+    '  4 = 删除最早50条\n' +
+    '  5 = 删除最早100条\n\n当前共 ' + list.length + ' 条：',
+    '1'
+  );
+  if (!choice) return;
+  const n = list.length;
+  let keep = list;
+  if (choice === '1') keep = [];
+  else if (choice === '2') keep = list.slice(Math.ceil(n/2));
+  else if (choice === '3') keep = list.slice(10);
+  else if (choice === '4') keep = list.slice(50);
+  else if (choice === '5') keep = list.slice(100);
+  else { showToast('无效选项', 'error'); return; }
+  const removed = n - keep.length;
+  if (!confirm('确认删除 ' + removed + ' 条早期记录？此操作不可恢复。')) return;
+  const others = (AppState.bazi_history || []).filter(h => !h || h.bazi_id !== currentId);
+  AppState.bazi_history = others.concat(keep);
+  baziHistPage = 0;
+  saveState();
+  renderBaziHistory();
+  showToast('已删除 ' + removed + ' 条', 'success');
+}
+
+function toggleBaziHist(i) {
+  const p = document.getElementById('bazi-hist-preview-' + i);
+  const f = document.getElementById('bazi-hist-full-' + i);
+  const a = document.getElementById('bazi-hist-actions-' + i);
+  if (!p || !f) return;
+  p.classList.toggle('hidden');
+  f.classList.toggle('hidden');
+  if (a) a.classList.toggle('hidden');
+}
+
+function reaskHistoryQuestion(q) {
+  const drawer = document.getElementById('scholar-drawer');
+  if (drawer && drawer.classList.contains('closed')) toggleScholarDrawer();
+  const input = document.getElementById('scholar-input');
+  if (input) {
+    input.value = q;
+    input.focus();
+  }
+}
+
+function toggleStarBazi(id) {
+  const h = (AppState.bazi_history || []).find(x => x && x.id === id);
+  if (!h) return;
+  h.starred = !h.starred;
+  saveState();
+  renderBaziHistory();
+}
+
+function deleteBaziHist(id) {
+  if (!confirm('删除这条记录？')) return;
+  AppState.bazi_history = (AppState.bazi_history || []).filter(x => x.id !== id);
+  saveState();
+  renderBaziHistory();
 }
 
 /* ---------------- 观向密码 ---------------- */
@@ -9431,6 +9665,8 @@ function renderBiorhythm() {
   renderDayunLiunian();
   renderSolarTerm();
   renderTimeCards();
+  renderWuxingBar();
+  renderSolarTermHint();
   renderBaziHistory();
   renderElementBars();
   renderPhaseBadge();
@@ -9488,29 +9724,47 @@ const _LIUNIAN = [
   { year: 2030, gz: '庚戌', note: '辰戌再冲，偏印透出：变动中有机遇，决策须慎。' },
 ];
 
+let selectedDayunIdx = -1;
 function renderDayunLiunian() {
-  document.getElementById('dayun-row').innerHTML = _DAYUN.map(d => {
+  const row = document.getElementById('dayun-row');
+  row.innerHTML = _DAYUN.map((d, i) => {
     const current = d.note.indexOf('当前') >= 0;
+    const selected = (i === selectedDayunIdx) || (selectedDayunIdx < 0 && current);
     return `
-    <div class="rounded-lg border ${current ? 'border-primary/50 bg-primary/5' : 'border-slate-200 bg-slate-50'} p-3 text-center">
-      <p class="font-mono text-base font-bold ${current ? 'text-primary' : 'text-slate-700'}">${d.gz}</p>
-      <p class="mt-0.5 text-[10px] text-slate-400">${d.range} 岁</p>
-      <p class="mt-1 text-[10px] leading-relaxed text-slate-500">${d.note}</p>
+    <div onclick="selectDayun(${i})" class="cursor-pointer rounded-lg border ${selected ? 'border-primary/50 bg-primary/5' : 'border-slate-200 bg-slate-50 hover:border-slate-300'} p-3 text-center transition-colors">
+      <p class="font-mono text-base font-bold ${selected ? 'text-primary' : 'text-slate-700'}">${d.gz}</p>
+      <p class="mt-0.5 text-[10px] text-slate-400">${d.range} 岁${current?' · 当前':''}</p>
+      <p class="mt-1 text-[10px] leading-relaxed text-slate-500">${d.note.replace('（当前大运）','')}</p>
     </div>`;
   }).join('');
 
-  const thisYear = new Date().getFullYear();
-  // 从当前年开始向后推演 10 年：命中 _LIUNIAN 用预设备注，未命中走 liunianInfoFor 兜底
+  // 选中大运后按年龄范围过滤流年
+  let dy = _DAYUN.find((d,i) => (i === selectedDayunIdx) || (selectedDayunIdx < 0 && d.note.indexOf('当前') >= 0)) || _DAYUN[_DAYUN.length-1];
+  const ageStart = parseInt(dy.range) || 30;
+  // 假设出生1989年，粗略推算该大运起止年
+  const birthYear = 1989;
+  const startYear = birthYear + ageStart;
+  const endYear = startYear + 9;
   const years = [];
-  for (let i = 0; i < 10; i++) years.push(liunianInfoFor(thisYear + i));
+  for (let y = startYear; y <= endYear; y++) {
+    years.push(liunianInfoFor(y));
+  }
   const titleEl = document.getElementById('liunian-title');
-  if (titleEl) titleEl.textContent = '流年走势（' + thisYear + ' - ' + (thisYear + 9) + '）';
+  if (titleEl) titleEl.textContent = dy.gz + '大运 · 流年走势（' + startYear + ' - ' + endYear + '）';
 
-  document.getElementById('liunian-list').innerHTML = years.map(l => `
-    <div class="flex items-start gap-3 rounded-lg border ${l.year === thisYear ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50'} px-3 py-2">
-      <span class="shrink-0 font-mono text-[13px] font-bold ${l.year === thisYear ? 'text-primary' : 'text-slate-600'}">${l.year} ${l.gz}</span>
+  document.getElementById('liunian-list').innerHTML = years.map(l => {
+    const age = l.year - 1989;
+    return `
+    <div class="flex items-start gap-3 rounded-lg border ${l.year === new Date().getFullYear() ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50'} px-3 py-2">
+      <span class="shrink-0 font-mono text-[13px] font-bold ${l.year === new Date().getFullYear() ? 'text-primary' : 'text-slate-600'}">${l.year} ${l.gz}<span class="ml-1 text-[10px] font-normal text-slate-400">${age}岁</span></span>
       <span class="min-w-0 flex-1 break-words text-[12px] leading-relaxed text-slate-500">${l.note}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function selectDayun(i) {
+  selectedDayunIdx = i;
+  renderDayunLiunian();
 }
 
 /* —— 时段建议推演引擎 —— */
@@ -9670,7 +9924,14 @@ function liunianInfoFor(year) {
   if (hit) return hit;
   const gz = liuNianGanZhi(year);
   const el = _BRANCH_ELEMENT[gz.zhi];
-  return { year: year, gz: gz.gan + gz.zhi, note: _FORTUNE_BY_ELEMENT[el].tag + '当值，宜依五行节律调息蓄势。' };
+  const notes = {
+    '金': '金气当令，宜读书考证、向上汇报，贵人在前辈',
+    '木': '木气舒展，宜输出表达、做新事情，别闷头想',
+    '水': '水气得助，宜顺势推进已有项目，决策可果断',
+    '火': '火气偏旺，财运有机会但别冒进，守住现金',
+    '土': '土气重，压力偏大，该休息休息，别硬扛'
+  };
+  return { year: year, gz: gz.gan + gz.zhi, note: notes[el] || '' };
 }
 
 /** 当前大运（取命理表里标记「当前大运」的一步） */
@@ -9679,6 +9940,101 @@ function currentDayunInfo() {
 }
 
 /** 生成九维时间卡片：流时 / 流日 / 流月 / 近三月 / 近半年 / 近一年 / 近两年 / 近五年 / 近十年 */
+/** 五行强弱：根据四柱天干地支统计 */
+function renderWuxingBar() {
+  const el = document.getElementById('wuxing-bar');
+  if (!el) return;
+  const pillars = getBaZi();
+  const counts = { '金':0, '木':0, '水':0, '火':0, '土':0 };
+  const ganWuxing = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
+  const zhiWuxing = { '子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水' };
+  pillars.forEach(p => {
+    if (p.length >= 2) {
+      if (ganWuxing[p[0]]) counts[ganWuxing[p[0]]]++;
+      if (zhiWuxing[p[1]]) counts[zhiWuxing[p[1]]]++;
+    }
+  });
+  const colors = { '金':'#b45309','木':'#15803d','水':'#0369a1','火':'#b91c1c','土':'#78350f' };
+  const max = Math.max(...Object.values(counts), 1);
+  el.innerHTML = Object.entries(counts).map(([k,v]) => {
+    const h = Math.max(8, (v/max)*48);
+    return `<div class="flex flex-col items-center gap-0.5">
+      <div style="width:28px;height:${h}px;background:${colors[k]};opacity:${v>0?0.85:0.15};border-radius:3px;"></div>
+      <span class="text-[11px]" style="color:${v>0?'#475569':'#cbd5e1'}">${k}</span>
+    </div>`;
+  }).join('');
+}
+
+/** 节气信息（供晨间心语调用） */
+function getCurrentSolarTerm() {
+  const terms = [
+    ['小寒',1,5,'水'],['大寒',1,20,'水'],
+    ['立春',2,4,'木'],['雨水',2,19,'木'],['惊蛰',3,6,'木'],['春分',3,21,'木'],
+    ['清明',4,5,'木'],['谷雨',4,20,'土'],
+    ['立夏',5,6,'火'],['小满',5,21,'火'],['芒种',6,6,'火'],['夏至',6,21,'火'],
+    ['小暑',7,7,'火'],['大暑',7,23,'土'],
+    ['立秋',8,8,'金'],['处暑',8,23,'金'],['白露',9,8,'金'],['秋分',9,23,'金'],
+    ['寒露',10,8,'土'],['霜降',10,23,'土'],
+    ['立冬',11,7,'水'],['小雪',11,22,'水'],['大雪',12,7,'水'],['冬至',12,22,'水']
+  ];
+  const now = new Date();
+  const y = now.getFullYear();
+  let current = terms[terms.length-1];
+  for (let i = 0; i < terms.length; i++) {
+    const t = new Date(y, terms[i][1]-1, terms[i][2]);
+    if (t <= now) current = terms[i];
+  }
+  const relations = {
+    '水': '水气当令，宜顺势而为',
+    '金': '金生水旺，宜学习沉淀',
+    '木': '食伤当令，宜输出表达',
+    '火': '财星当令，宜守不宜冒进',
+    '土': '官杀当令，注意别硬扛'
+  };
+  return { current: current[0], fortune: relations[current[3]] || '' };
+}
+
+/** 节气：当前节气 + 下一节气 + 结合日主的修身建议 */
+function renderSolarTermHint() {
+  const nameEl = document.getElementById('current-term-name');
+  const nextEl = document.getElementById('next-term-hint');
+  const fortuneEl = document.getElementById('term-fortune');
+  if (!nameEl) return;
+  const terms = [
+    ['小寒',1,5,'水'],['大寒',1,20,'水'],
+    ['立春',2,4,'木'],['雨水',2,19,'木'],['惊蛰',3,6,'木'],['春分',3,21,'木'],
+    ['清明',4,5,'木'],['谷雨',4,20,'土'],
+    ['立夏',5,6,'火'],['小满',5,21,'火'],['芒种',6,6,'火'],['夏至',6,21,'火'],
+    ['小暑',7,7,'火'],['大暑',7,23,'土'],
+    ['立秋',8,8,'金'],['处暑',8,23,'金'],['白露',9,8,'金'],['秋分',9,23,'金'],
+    ['寒露',10,8,'土'],['霜降',10,23,'土'],
+    ['立冬',11,7,'水'],['小雪',11,22,'水'],['大雪',12,7,'水'],['冬至',12,22,'水']
+  ];
+  const now = new Date();
+  const y = now.getFullYear();
+  let current = terms[terms.length-1], next = terms[0];
+  for (let i = 0; i < terms.length; i++) {
+    const t = new Date(y, terms[i][1]-1, terms[i][2]);
+    if (t <= now) current = terms[i];
+    if (t > now) { next = terms[i]; break; }
+  }
+  nameEl.textContent = current[0];
+  const days = Math.ceil((new Date(y, next[1]-1, next[2]) - now) / 86400000);
+  nextEl.textContent = next[0] + '还有' + days + '天';
+
+  // 日主壬水，喜金水：按当令五行给建议
+  const dayMaster = '水';
+  const seasonEl = current[3];
+  const relations = {
+    '水': '你是壬水日主，今季水气当令，得势。宜顺势而为，决策上可果断一些，精力也比其他月份旺。',
+    '金': '金生水，今季印星当令。宜学习、沉淀、向内求，贵人运在长辈或前辈身上。',
+    '木': '水生木，今季食伤当令。宜输出、表达、做事情，但注意别想太多消耗自己。',
+    '火': '水克火，今季财星当令。财运有机会，但别冲动投资，守住已有比冒险重要。',
+    '土': '土克水，今季官杀当令。压力偏大，工作上注意别硬扛，该休息就休息。'
+  };
+  fortuneEl.textContent = relations[seasonEl] || '';
+}
+
 function renderTimeCards() {
   const now = new Date();
   const ln = liuNianGanZhi(now.getFullYear());
@@ -9911,13 +10267,16 @@ function updateKeyStatusUI() {
  * 四柱由当前选中的命盘档案在运行时注入
  */
 function getScholarSystemPrompt() {
-  return '你是一位精通中国传统命理学的隐世书生。你的任务是为用户提供极其严谨的八字推演。\n' +
-    '用户当前命盘的四柱为：【' + getBaZi().join('、') + '】（乾造）。\n' +
-    '你的推演必须严格遵守以下规则：\n' +
-    '1. 严格以《滴天髓》《子平真诠》《穷通宝鉴》《三命通会》《渊海子平》为主要依据。\n' +
-    '2. 凡古籍无据者不妄断，禁止任何现代心理学的套话、安慰话或迎合。\n' +
-    '3. 只输出最有依据、验证性最高的结论。\n' +
-    '4. 回答风格要古雅、精炼，直击要害。如果用户问的问题超出八字范畴，请用古文委婉劝退，让其回归修己之道。' + PLAIN_TEXT_RULE;
+  const dayun = currentDayunInfo();
+  return '你是一位精通中国传统命理学的隐世书生，说话像个见过世面的老先生——不端着，不拽文。\n' +
+    '用户当前命盘的四柱为：【' + getBaZi().join('、') + '】。\n' +
+    '当前大运为：【' + dayun.gz + '】（' + dayun.range + '岁，' + dayun.note.replace('（当前大运）','') + '）。\n' +
+    '规则：\n' +
+    '1. 以《滴天髓》《子平真诠》《穷通宝鉴》《三命通会》《渊海子平》为依据，用大白话把命理想明白白讲清楚，不要堆砌古文。\n' +
+    '2. 用户其他模块里记录的信息（待办、拾遗、书、决策等）只作背景参考，不要被它带偏——命理判断以古籍为准。\n' +
+    '3. 说话口语化，像跟朋友喝茶聊天，可以用"你""这步运""说白了"这种词，但结论要干脆，别绕弯子。\n' +
+    '4. 不要反问用户四柱或大运——这些信息已经给你了，直接据此分析。\n' +
+    '5. 不搞心理安慰那一套，是什么说什么。超出八字范畴的问题，直说"这事儿命理管不了，回去修己"。' + PLAIN_TEXT_RULE;
 }
 
 /* ================================================================
@@ -10076,6 +10435,8 @@ let scholarInited = false;
 let scholarBusy = false;
 let lastScholarAnswer = '';
 let scholarContext = '';
+let scholarLastQ = '';
+let scholarLastA = '';
 let scholarUnsavedWarned = '';
 
 const SCHOLAR_WELCOME = '有礼了。小生研习《滴天髓》《子平真诠》诸典，谨持一造之盘。\n\n凡跳槽、财运、学业、感情之惑，但说无妨。只言有据之语，不作迎合之辞。';
@@ -10102,7 +10463,15 @@ function updateScholarKeyState() {
   const configured = hasDeepseekKey();
   const btn = document.getElementById('scholar-send-btn');
   const input = document.getElementById('scholar-input');
+  const cfgBtn = document.getElementById('scholar-config-btn');
   const blocked = !configured || scholarBusy;
+
+  if (cfgBtn) {
+    cfgBtn.textContent = configured ? '✓ 已配置' : '⚙️ 配置';
+    cfgBtn.className = configured
+      ? 'rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-600 transition-colors hover:bg-emerald-100'
+      : 'rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-500 transition-colors hover:border-primary/40 hover:text-primary';
+  }
 
   if (btn) {
     btn.disabled = blocked;
@@ -10197,6 +10566,8 @@ function clearScholarConversation() {
   AppState.bazi_history = (Array.isArray(AppState.bazi_history) ? AppState.bazi_history : [])
     .filter(h => (h && (h.bazi_id || 'bazi_default')) !== currentBazi);
   lastScholarAnswer = '';
+  scholarLastQ = '';
+  scholarLastA = '';
   scholarUnsavedWarned = '';
   scholarContext = '';
   scholarInited = true;
@@ -10296,6 +10667,10 @@ function attachSedimentButton(bubble, question, answer) {
   const bar = document.createElement('div');
   bar.className = 'mt-1 flex flex-wrap items-center gap-1.5';
   bar.appendChild(makeAnswerActionBtn('💡 沉淀为知识卡片', () => openSedimentModal(question, answer)));
+  bar.appendChild(makeAnswerActionBtn('🔄 换个说法', () => {
+    const input = document.getElementById('scholar-input');
+    if (input) { input.value = question + '（换个角度再说一遍，更口语一点）'; sendScholarQuestion(); }
+  }));
   bar.appendChild(makeFavoriteBtn('scholar', question, answer));
   wrap.appendChild(bar);
   scrollScholarToBottom();
@@ -10549,6 +10924,37 @@ function confirmSediment() {
 }
 
 /** 提问书生：空气泡占位 → SSE 流式 → 打字机渲染 */
+/** 猜你想问：根据命盘随机推荐一个命理问题 */
+function guessScholarQuestion() {
+  // 根据上一轮问题智能推荐后续
+  const followUps = {
+    '财': ['那什么时候财运最好？', '我适合投资还是守财？', '正财和偏财哪个更旺？'],
+    '事业': ['那我现在该跳槽还是留下？', '和领导的关系怎么处理？', '下一步该主动求变还是以静制动？'],
+    '感情': ('我什么时候能遇到正缘？', '我和另一半最近老吵架怎么办？'),
+    '健康': ['我该重点保养哪个脏腑？', '适合运动还是静养？'],
+    '跳槽': ['那下家什么时候动最合适？', '我在现单位还能待多久？']
+  };
+  let pool = [
+    '我今年财运如何？',
+    '这步运事业上该进还是该守？',
+    '我适合往哪个方向发展？',
+    '最近感情上该注意什么？',
+    '我现在的精力状态适合做重大决定吗？',
+    '明年的事业运怎么样？',
+    '我和领导/同事的关系该怎么处？',
+    '现在适合学习新东西吗？',
+    '我身体上该注意哪方面？'
+  ];
+  if (scholarLastQ) {
+    for (const [kw, follow] of Object.entries(followUps)) {
+      if (scholarLastQ.includes(kw)) pool = follow.concat(pool);
+    }
+  }
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  const input = document.getElementById('scholar-input');
+  if (input) { input.value = q; input.focus(); }
+}
+
 async function sendScholarQuestion() {
   if (scholarBusy) return;
   const input = document.getElementById('scholar-input');
@@ -10579,7 +10985,13 @@ async function sendScholarQuestion() {
   updateScholarKeyState();
 
   const answerBaziId = getActiveBaziProfile().id;
-  const outgoing = scholarContext ? scholarContext + q : q;
+  // 多轮上下文：带上一次问答，让书生能接得上
+  let outgoing = q;
+  if (scholarLastQ && scholarLastA) {
+    outgoing = '【上一轮对话】\n我问：' + scholarLastQ + '\n你答：' + scholarLastA + '\n\n【现在我接着问】\n' + q;
+  } else if (scholarContext) {
+    outgoing = scholarContext + q;
+  }
   scholarContext = '';
 
   let started = false;
@@ -10597,6 +11009,8 @@ async function sendScholarQuestion() {
       bubble.textContent = '书生沉吟良久，未落一字。请换一个更具体的问法。';
     } else {
       lastScholarAnswer = plainText;
+      scholarLastQ = q;
+      scholarLastA = plainText;
       scholarUnsavedWarned = '';
       attachSedimentButton(bubble, q, plainText); // 💡 一键沉淀为图谱知识卡片
       recordBaziHistory(q, plainText, answerBaziId); // 命理问答按提问时命盘留痕
@@ -10605,7 +11019,7 @@ async function sendScholarQuestion() {
     typer.finish();
     if (!started && bubble.parentElement) bubble.parentElement.remove(); // 移除空的占位气泡
     console.error('[PEOS] 书生应答失败：', err);
-    appendScholarError('书生闭门谢客（API请求失败）：请检查 Key 或网络。');
+    appendScholarError('书生闭门谢客：' + (err.message || '未知错误') + '。请检查 Key 是否有效或网络是否通畅。');
   } finally {
     scholarBusy = false;
     updateScholarKeyState();
@@ -10939,6 +11353,247 @@ function collectTodayTraces() {
   return traces;
 }
 
+/* ---------------- 流年日历 ---------------- */
+let calSelectedDate = '';
+let calYearDelta = 0;
+let calMood = '';
+
+function setCalMood(btn, mood) {
+  calMood = mood;
+  document.querySelectorAll('.cal-mood-btn').forEach(b => b.classList.remove('bg-primary/20','ring-1','ring-primary'));
+  btn.classList.add('bg-primary/20','ring-1','ring-primary');
+}
+// 农历数据（2024-2030）
+const LUNAR_INFO = [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+  0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+  0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+  0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+  0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+  0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0];
+const LUNAR_MONTHS = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+const LUNAR_DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+
+function lYearDays(y) {
+  let sum = 348;
+  for (let i = 0x8000; i > 0x8; i >>= 1) sum += (LUNAR_INFO[y-2024] & i) ? 1 : 0;
+  return sum + leapDays(y);
+}
+function leapMonth(y) { return LUNAR_INFO[y-2024] & 0xf; }
+function leapDays(y) {
+  if (leapMonth(y)) return (LUNAR_INFO[y-2024] & 0x10000) ? 30 : 29;
+  return 0;
+}
+function monthDays(y, m) { return (LUNAR_INFO[y-2024] & (0x10000 >> m)) ? 30 : 29; }
+function solarToLunar(y, m, d) {
+  if (y < 2024 || y > 2030) return '';
+  let offset = (Date.UTC(y,m-1,d) - Date.UTC(2024,1,1)) / 86400000;
+  let i, temp = 0;
+  for (i = 2024; i < y && offset > 0; i++) { temp = lYearDays(i); offset -= temp; }
+  if (offset < 0) { offset += temp; i--; }
+  let leap = leapMonth(i); let isLeap = false;
+  for (i = 1; i < 13 && offset > 0; i++) {
+    if (leap > 0 && i === leap + 1 && !isLeap) { --i; isLeap = true; temp = leapDays(y); }
+    else temp = monthDays(y, i);
+    if (isLeap && i === leap + 1) isLeap = false;
+    offset -= temp;
+  }
+  if (offset === 0 && leap > 0 && i === leap + 1) if (isLeap) isLeap = false; else { isLeap = true; --i; }
+  if (offset < 0) { offset += temp; --i; }
+  return (isLeap ? '闰' : '') + LUNAR_MONTHS[i-1] + '月' + LUNAR_DAYS[offset];
+}
+
+function calYearOffset(d) { calYearDelta += d; renderCalendar(); }
+
+function calCompactMode() {
+  const grid = document.getElementById('calendar-grid');
+  if (!grid) return;
+  grid.classList.toggle('cal-compact');
+  if (grid.classList.contains('cal-compact')) {
+    grid.classList.remove('lg:grid-cols-3');
+    grid.classList.add('lg:grid-cols-4');
+  } else {
+    grid.classList.remove('lg:grid-cols-4');
+    grid.classList.add('lg:grid-cols-3');
+  }
+}
+
+function gotoCurrentMonth() {
+  calYearDelta = 0;
+  renderCalendar();
+  const now = new Date();
+  const idx = now.getMonth();
+  const cards = document.querySelectorAll('#calendar-grid > div');
+  if (cards[idx]) {
+    cards[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cards[idx].classList.add('cal-pulse');
+    setTimeout(() => cards[idx].classList.remove('cal-pulse'), 3000);
+  }
+}
+let calViewMode = 'year'; // year=全年铺开, month=单月大视图
+
+function renderCalendar() {
+  const grid = document.getElementById('calendar-grid');
+  const yearLabel = document.getElementById('cal-year-label');
+  if (!grid) return;
+  const now = new Date();
+  const year = now.getFullYear() + calYearDelta;
+  yearLabel.textContent = year + ' 年';
+  if (!AppState.calendar) AppState.calendar = {};
+
+  const holidays = {
+    '01-01':'元旦','02-17':'春节','02-18':'春节','02-19':'春节','02-20':'春节','02-21':'春节','02-22':'春节','02-23':'春节','02-24':'春节',
+    '04-04':'清明','04-05':'清明','04-06':'清明',
+    '05-01':'劳动节','05-02':'劳动节','05-03':'劳动节','05-04':'劳动节','05-05':'劳动节',
+    '06-19':'端午','06-20':'端午','06-21':'端午',
+    '09-25':'中秋','09-26':'中秋','09-27':'中秋',
+    '10-01':'国庆','10-02':'国庆','10-03':'国庆','10-04':'国庆','10-05':'国庆','10-06':'国庆','10-07':'国庆'
+  };
+  const workdays = { '02-14':'班','02-28':'班','04-26':'班','10-10':'班' };
+  const terms = {
+    '01-05':'小寒','01-20':'大寒','02-04':'立春','02-19':'雨水','03-06':'惊蛰','03-21':'春分',
+    '04-05':'清明','04-20':'谷雨','05-06':'立夏','05-21':'小满','06-06':'芒种','06-21':'夏至',
+    '07-07':'小暑','07-23':'大暑','08-08':'立秋','08-23':'处暑','09-08':'白露','09-23':'秋分',
+    '10-08':'寒露','10-23':'霜降','11-07':'立冬','11-22':'小雪','12-07':'大雪','12-22':'冬至'
+  };
+
+  const monthsToShow = calViewMode === 'month' ? [now.getMonth()] : Array.from({length:12},(_,i)=>i);
+  const gridCls = calViewMode === 'month' ? 'grid-cols-1 md:grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
+  const compact = calViewMode === 'year';
+
+  let html = '';
+  for (const m of monthsToShow) {
+    const first = new Date(year, m, 1);
+    const days = new Date(year, m+1, 0).getDate();
+    const startWd = first.getDay();
+    let cells = '<div class="grid grid-cols-7 gap-0.5 text-center text-[9px] text-slate-400 mb-1"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>';
+    cells += '<div class="grid grid-cols-7 gap-0.5">';
+    for (let i = 0; i < startWd; i++) cells += '<span></span>';
+    for (let d = 1; d <= days; d++) {
+      const ds = year + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const md = String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const note = AppState.calendar[ds];
+      const noteText = (typeof note === 'object') ? note.text : note;
+      const noteMood = (typeof note === 'object') ? note.mood : '';
+      const hol = holidays[md];
+      const term = terms[md];
+      const wd = workdays[md];
+      const lunar = solarToLunar(year, m+1, d);
+      const isToday = ds === toDateStr();
+      const lunarTag = lunar ? (lunar.endsWith('初一') ? lunar.slice(0,-2) : lunar.slice(-2)) : '';
+      let cls = compact
+        ? 'relative flex flex-col items-center justify-center h-9 cursor-pointer rounded-md text-[11px] hover:bg-slate-100 leading-tight'
+        : 'relative flex flex-col items-center justify-center h-12 cursor-pointer rounded-md text-[16px] hover:bg-slate-100';
+      if (note) cls += ' bg-amber-100/60 font-semibold';
+      else if (hol) cls += ' text-rose-600';
+      else if (wd) cls += ' text-slate-500';
+      else cls += ' text-slate-700';
+      if (isToday) cls += ' ring-1 ring-primary';
+      const tag = hol || wd || term || lunarTag || '';
+      const tagCls = hol ? 'text-rose-500' : wd ? 'text-orange-400' : term ? 'text-teal-500' : 'text-slate-400';
+      const tagSize = compact ? 'text-[7px]' : 'text-[9px]';
+      cells += `<div onclick="openCalModal('${ds}')" title="${noteText||hol||wd||term||lunar||''}" class="${cls}">
+        <span>${d}${noteMood?' '+noteMood:''}</span>
+        ${tag ? `<span class="${tagSize} leading-none ${tagCls}">${tag}</span>` : ''}
+      </div>`;
+    }
+    cells += '</div>';
+    html += `<div class="rounded-lg border border-slate-200 bg-white/50 p-3">
+      <p class="mb-2 text-[12px] font-semibold text-slate-700">${m+1}月</p>
+      ${cells}
+    </div>`;
+  }
+  grid.className = 'mt-5 grid gap-4 ' + gridCls;
+  grid.innerHTML = html;
+}
+
+function calToggleView() {
+  calViewMode = calViewMode === 'year' ? 'month' : 'year';
+  renderCalendar();
+  const btn = document.getElementById('cal-view-btn');
+  if (btn) btn.textContent = calViewMode === 'year' ? '▦ 全年' : '☰ 当月';
+}
+
+/* 单击延迟，等待双击 */
+let calClickTimer = null;
+function calClick(dateStr, e) {
+  clearTimeout(calClickTimer);
+  calClickTimer = setTimeout(() => openCalModal(dateStr), 250);
+}
+
+/* 双击日历日期：基于八字的当日运势 */
+async function showAlmanac(dateStr) {
+  clearTimeout(calClickTimer);
+  const lunar = solarToLunar(...dateStr.split('-').map(Number));
+  document.getElementById('almanac-date').textContent = dateStr + '  农历' + lunar;
+  document.getElementById('almanac-yi').textContent = '';
+  document.getElementById('almanac-ji').textContent = '';
+  document.getElementById('almanac-modal').classList.remove('hidden');
+  document.getElementById('almanac-modal').classList.add('flex');
+
+  const sys = '你是一位资深命理师，根据用户八字（壬水日主，喜金水，甲子大运，1989年生），用3-5句话口语化分析指定日期的运势走向，分事业、财运、健康三方面，结尾给一句行动建议。不要用术语堆砌，像朋友聊天。';
+  const user = '分析 ' + dateStr + '（农历' + lunar + '）这一天的运势。';
+  try {
+    let html = '';
+    await callDeepSeekAPI(user, (delta) => {
+      html += delta;
+      document.getElementById('almanac-yi').innerHTML = '<p class="text-[13px] leading-relaxed text-slate-700">' + html + '</p>';
+    }, sys);
+  } catch (e) {
+    document.getElementById('almanac-yi').textContent = 'Key未配置或请求失败';
+  }
+}
+function closeAlmanac() {
+  document.getElementById('almanac-modal').classList.add('hidden');
+  document.getElementById('almanac-modal').classList.remove('flex');
+}
+
+function askScholarDay() {
+  const ds = calSelectedDate;
+  closeCalModal();
+  closeAlmanac();
+  switchView('biorhythm');
+  setTimeout(() => {
+    const input = document.getElementById('scholar-input');
+    if (input) {
+      input.value = '分析一下 ' + ds + ' 这天我的运势（事业/财运/健康）';
+      input.focus();
+    }
+  }, 300);
+}
+
+function openCalModal(dateStr) {
+  calSelectedDate = dateStr;
+  calMood = '';
+  document.querySelectorAll('.cal-mood-btn').forEach(b => b.classList.remove('bg-primary/20','ring-1','ring-primary'));
+  const saved = (AppState.calendar && AppState.calendar[dateStr]) || {};
+  document.getElementById('cal-modal-date').textContent = dateStr;
+  document.getElementById('cal-modal-note').value = saved.text || '';
+  document.getElementById('cal-modal').classList.remove('hidden');
+  document.getElementById('cal-modal').classList.add('flex');
+}
+
+function closeCalModal() {
+  document.getElementById('cal-modal').classList.add('hidden');
+  document.getElementById('cal-modal').classList.remove('flex');
+}
+
+function saveCalNote() {
+  const v = document.getElementById('cal-modal-note').value.trim();
+  if (!AppState.calendar) AppState.calendar = {};
+  if (v || calMood) AppState.calendar[calSelectedDate] = { text: v, mood: calMood };
+  else delete AppState.calendar[calSelectedDate];
+  saveState();
+  renderCalendar();
+  closeCalModal();
+}
+
+function deleteCalNote() {
+  if (AppState.calendar) delete AppState.calendar[calSelectedDate];
+  saveState();
+  renderCalendar();
+  closeCalModal();
+}
+
 function renderNightboat() {
   ensureNightboatStore();
   const dateEl = document.getElementById('nightboat-today-date');
@@ -10988,11 +11643,55 @@ function renderNightboat() {
     }
   }
   renderNightboatSavedBadge();
+  renderWeeklyOverview();
   startAutoBoatLoop();
   startMeteorLoop();
 }
 
+/** 本周航图：最近7天一览 */
+function renderWeeklyOverview() {
+  const el = document.getElementById('nightboat-week');
+  if (!el) return;
+  const today = new Date();
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = toDateStr(d);
+    const entry = AppState.nightboat.find(x => x && x.date === ds);
+    days.push({ date: ds, entry: entry });
+  }
+  const dayNames = ['日','一','二','三','四','五','六'];
+  let totalTraces = 0, savedCount = 0;
+  days.forEach(d => {
+    if (d.entry && d.entry.savedAt) savedCount++;
+    if (d.entry && d.entry.traces) totalTraces += d.entry.traces.length;
+  });
+  el.innerHTML = `
+    <div class="flex justify-between">
+      ${days.map(d => {
+        const has = d.entry && d.entry.savedAt;
+        const wd = dayNames[new Date(d.date).getDay()];
+        return `<div class="flex flex-col items-center gap-1">
+          <div class="w-2.5 h-2.5 rounded-full ${has ? 'bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.6)]' : 'bg-white/15'}"></div>
+          <span class="text-[9px] ${has ? 'text-amber-200' : 'text-white/30'}">${wd}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <p class="mt-3 text-[11px] text-amber-100/50 leading-relaxed">
+      这七日收了 <span class="text-amber-200">${savedCount}</span> 条船，
+      留下 <span class="text-amber-200">${totalTraces}</span> 道痕迹。
+    </p>`;
+}
+
 /** 清屏：隐藏输入框/按钮/列表，只留夜景动效 */
+function toggleNightboatUI() {
+  const sb = document.getElementById('sidebar');
+  const tb = document.querySelector('header');
+  if (sb) sb.classList.toggle('hidden');
+  if (tb) tb.classList.toggle('hidden');
+}
+
 function toggleNightboatClean() {
   const c = document.getElementById('nightboat-content');
   const btn = document.getElementById('nightboat-clean-btn');
@@ -11003,6 +11702,16 @@ function toggleNightboatClean() {
 }
 
 /** 全屏：夜航页面铺满整个窗口（含侧栏） */
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    document.querySelector('button[onclick="toggleFullscreen()"]').textContent = '🗗';
+  } else {
+    document.exitFullscreen();
+    document.querySelector('button[onclick="toggleFullscreen()"]').textContent = '⛶';
+  }
+}
+
 function toggleNightboatFull() {
   const bg = document.querySelector('.nightboat-bg');
   if (!bg) return;
@@ -11023,14 +11732,16 @@ function toggleNightboatFull() {
   }
 }
 
-/** 流星：每10~20秒划过，数量随机1~3颗 */
+/** 流星：每3~6秒划过，数量随机2~6颗 */
 function startMeteorLoop() {
   function spawn() {
+    if (AppState.meta.currentView !== 'nightboat') return;
     const bg = document.querySelector('.nightboat-bg');
     if (!bg) return;
-    const count = 1 + Math.floor(Math.random() * 3);
+    const count = 2 + Math.floor(Math.random() * 5);
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
+        if (AppState.meta.currentView !== 'nightboat') return;
         const dur = 1.2 + Math.random() * 0.8;
         const m = document.createElement('div');
         m.className = 'night-meteor';
@@ -11056,6 +11767,10 @@ function startAutoBoatLoop() {
   if (!container) return;
 
   function launchOne() {
+    if (AppState.meta.currentView !== 'nightboat') {
+      autoBoatTimer = setTimeout(launchOne, 5000);
+      return;
+    }
     const boat = document.createElement('div');
     boat.className = 'auto-boat';
     boat.style.bottom = '0px';
@@ -11145,56 +11860,19 @@ function renderNightboatSavedBadge() {
 /** 点击夜航背景：浮出一艘夜行小船 */
 function spawnNightBoat(e) {
   const bg = e.currentTarget;
-  const rect = bg.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const boat = document.createElement('div');
-  boat.className = 'night-boat';
-  boat.style.left = x + 'px';
-  boat.style.top = y + 'px';
-  boat.innerHTML = `
-    <svg width="60" height="40" viewBox="0 0 60 40" fill="none">
-      <!-- 船身 -->
-      <path d="M8 28 L52 28 L46 34 L14 34 Z" fill="#3d2f1f" opacity="0.9"/>
-      <!-- 桅杆 -->
-      <line x1="30" y1="28" x2="30" y2="8" stroke="#5a4a3a" stroke-width="1.2"/>
-      <!-- 帆 -->
-      <path d="M30 10 Q42 14 40 26 L30 26 Z" fill="#fde68a" opacity="0.85"/>
-      <!-- 人影 -->
-      <circle cx="30" cy="24" r="2" fill="#fde68a"/>
-      <!-- 水面波光 -->
-      <ellipse cx="30" cy="36" rx="22" ry="2" fill="#fde68a" opacity="0.2"/>
-    </svg>
-    <svg class="boat-fish" width="16" height="10" viewBox="0 0 16 10" fill="none" style="position:absolute; left:46px; top:28px;">
-      <path d="M14 5 Q10 2 6 5 Q4 6 2 5 Q4 7 6 5 Q10 8 14 5 Z" fill="#fde68a" opacity="0.8"/>
-    </svg>`;
-  bg.appendChild(boat);
-
-  // 涟漪
-  for (let i = 0; i < 3; i++) {
+  const count = 1 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < count; i++) {
     setTimeout(() => {
-      const r = document.createElement('div');
-      r.className = 'boat-ripple';
-      r.style.left = (x + 10) + 'px';
-      r.style.top = (y + 28) + 'px';
-      bg.appendChild(r);
-      setTimeout(() => r.remove(), 2000);
-    }, i * 400);
+      const dur = 1 + Math.random() * 0.5;
+      const m = document.createElement('div');
+      m.className = 'night-meteor';
+      m.style.left = (70 + Math.random() * 25) + '%';
+      m.style.top = (0 + Math.random() * 10) + '%';
+      m.style.animationDuration = dur + 's';
+      bg.appendChild(m);
+      setTimeout(() => m.remove(), dur * 1000);
+    }, i * 300);
   }
-
-  setTimeout(() => boat.remove(), 6000);
-
-  // 鱼落水时溅起涟漪（精确落在鱼的落点）
-  setTimeout(() => {
-    const splash = document.createElement('div');
-    splash.className = 'fish-splash';
-    // 落点 = 点击点 + 船漂移(49px) + 鱼从船头起跳(46,28) + 鱼腾空位移(46,10)，再居中
-    splash.style.left = (x + 49 + 46 + 46 + 33 - 3) + 'px';
-    splash.style.top = (y + 28 + 10 - 1.5) + 'px';
-    bg.appendChild(splash);
-    setTimeout(() => splash.remove(), 1000);
-  }, 2100);
 }
 
 function renderFavorites() {
@@ -11211,6 +11889,8 @@ function renderFavorites() {
     const currentBazi = AppState.current_bazi_id || 'bazi_default';
     list = list.filter(f => (f.bazi_id || 'bazi_default') === currentBazi);
   }
+  const kw = (document.getElementById('fav-search')?.value || '').trim().toLowerCase();
+  if (kw) list = list.filter(f => (f.question||'').toLowerCase().includes(kw) || (f.answer||'').toLowerCase().includes(kw));
   const box = document.getElementById('favorite-list');
   if (list.length === 0) {
     box.innerHTML = '<p class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">暂无收藏 —— 在 AI 回答下方点「⭐ 收藏」即可留存</p>';
@@ -11224,7 +11904,7 @@ function renderFavorites() {
       </div>
       <p class="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap text-[12px] leading-relaxed text-slate-500">${escapeHtml(f.answer.slice(0, 300))}${f.answer.length > 300 ? '…' : ''}</p>
       <div class="mt-3 flex items-center justify-between">
-        <span class="rounded-full border px-2 py-0.5 text-[10px] ${f.type === 'scholar' ? 'border-accent/40 bg-accent/10 text-accent' : 'border-primary/30 bg-primary/10 text-primary'}">${f.type === 'scholar' ? '观向问答' : '迷局推演'}</span>
+        <span class="rounded-full border px-2 py-0.5 text-[10px] ${f.type === 'scholar' ? 'border-accent/40 bg-accent/10 text-accent' : 'border-primary/30 bg-primary/10 text-primary'}">${f.type === 'scholar' ? '观向问答' : '秉烛问局'}</span>
         <div class="flex items-center gap-1.5">
           <button onclick="continueFavorite('${f.id}')" class="rounded-md bg-gradient-to-r from-primary/90 to-primary px-2.5 py-1 text-[11px] font-semibold text-white transition hover:brightness-110">继续追问</button>
           <button onclick="deleteFavorite('${f.id}')" class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:text-rose-600">删除</button>
@@ -13703,6 +14383,21 @@ document.addEventListener('click', e => {
   const panel = document.getElementById('toolbox-panel');
   if (wrap && panel && !wrap.contains(e.target)) panel.classList.add('hidden');
 });
+
+// 日历函数导出到window
+window.showAlmanac = showAlmanac;
+window.closeAlmanac = closeAlmanac;
+window.openCalModal = openCalModal;
+window.closeCalModal = closeCalModal;
+window.saveCalNote = saveCalNote;
+window.deleteCalNote = deleteCalNote;
+window.calYearOffset = calYearOffset;
+window.gotoCurrentMonth = gotoCurrentMonth;
+window.calCompactMode = calCompactMode;
+window.calToggleView = calToggleView;
+window.askScholarDay = askScholarDay;
+window.setCalMood = setCalMood;
+window.toggleNightboatUI = toggleNightboatUI;
 </script>
 
 <script>
