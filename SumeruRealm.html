@@ -2488,13 +2488,16 @@ console.warn = function(...args) {
               <input id="wish-name" type="text" maxlength="60" placeholder="书名（必填）" class="io-input" required />
               <input id="wish-author" type="text" maxlength="30" placeholder="作者" class="io-input" />
               <input id="wish-date" type="date" class="io-input" title="添加日期" />
-              <select id="wish-star" class="io-input">
-                <option value="5">期望指数 ★★★★★</option>
-                <option value="4">期望指数 ★★★★☆</option>
-                <option value="3">期望指数 ★★★☆☆</option>
-                <option value="2">期望指数 ★★☆☆☆</option>
-                <option value="1">期望指数 ★☆☆☆☆</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <span class="w-12 shrink-0 text-[12px] text-slate-500">期许</span>
+                <select id="wish-star" class="io-input flex-1">
+                  <option value="5">★★★★★</option>
+                  <option value="4">★★★★☆</option>
+                  <option value="3">★★★☆☆</option>
+                  <option value="2">★★☆☆☆</option>
+                  <option value="1">★☆☆☆☆</option>
+                </select>
+              </div>
               <input id="wish-price" type="number" min="0" step="0.01" placeholder="预估价格 ¥" class="io-input" />
               <input id="wish-reason" type="text" maxlength="120" placeholder="想读理由" class="io-input" />
               <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-primary/90 to-primary py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110 md:col-span-3">＋ 加入愿望单</button>
@@ -2550,25 +2553,49 @@ console.warn = function(...args) {
             <input id="bk-name" type="text" maxlength="60" placeholder="书名（必填）" class="io-input" required />
             <input id="bk-author" type="text" maxlength="30" placeholder="作者" class="io-input" />
             <input id="bk-pub" type="month" class="io-input" title="出版年月" />
-            <select id="bk-purpose" class="io-input" title="用途"></select>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">用途</span>
+              <select id="bk-purpose" class="io-input flex-1"></select>
+            </div>
             <input id="bk-buy" type="date" class="io-input" title="购买日期" />
-            <select id="bk-source" class="io-input" title="来源"></select>
-            <select id="bk-type" onchange="syncBookTypeField(); updateBookFormTotal()" class="io-input">
-              <option value="实体书">形态：实体书</option>
-              <option value="电子版">形态：电子版</option>
-              <option value="电子版打印">形态：电子版打印</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">来源</span>
+              <select id="bk-source" class="io-input flex-1"></select>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">形态</span>
+              <select id="bk-type" onchange="syncBookTypeField(); updateBookFormTotal()" class="io-input flex-1">
+                <option value="实体书">实体书</option>
+                <option value="电子版">电子版</option>
+                <option value="电子版打印">电子版打印</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">品相</span>
+              <select id="bk-condition" class="io-input flex-1">
+                <option value="全新">全新</option>
+                <option value="九五品">九五品</option>
+                <option value="九品">九品</option>
+                <option value="八五品">八五品</option>
+                <option value="八品">八品</option>
+                <option value="七品">七品</option>
+                <option value="六品及以下">六品及以下</option>
+              </select>
+            </div>
             <div class="grid grid-cols-2 gap-2">
               <input id="bk-price" type="number" min="0" step="0.01" placeholder="书价 ¥" class="io-input" oninput="updateBookFormTotal()" />
               <input id="bk-freight" type="number" min="0" step="0.01" placeholder="运费 ¥" class="io-input" oninput="updateBookFormTotal()" />
             </div>
             <input id="bk-print-fee" type="number" min="0" step="0.01" placeholder="打印费 ¥" class="io-input"
               title="仅「电子版打印」形态计入总价" disabled oninput="updateBookFormTotal()" />
-            <select id="bk-benefit" class="io-input">
-              <option value="高">助益等级：高</option>
-              <option value="中">助益等级：中</option>
-              <option value="低">助益等级：低</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">助益</span>
+              <select id="bk-benefit" class="io-input flex-1">
+                <option value="高">高</option>
+                <option value="中">中</option>
+                <option value="低">低</option>
+              </select>
+            </div>
             <div class="flex items-center justify-between rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2">
               <span class="text-[11px] text-slate-500">合计预览 · 书价 + 运费 + 打印费</span>
               <span id="bk-total-preview" class="font-mono text-[13px] font-semibold text-primary" aria-live="polite">¥0.00</span>
@@ -3026,18 +3053,24 @@ console.warn = function(...args) {
             <input id="v-date" type="month" title="达成年月" class="io-input" />
             <input id="v-effect" type="text" maxlength="100" placeholder="期望效果 / 达成画面" class="io-input md:col-span-2" />
             <textarea id="v-path" rows="2" maxlength="300" placeholder="实现路径（打算怎么走）" class="io-input resize-none md:col-span-2"></textarea>
-            <select id="v-level" class="io-input" title="期许度">
-              <option value="随缘">随缘</option>
-              <option value="可期" selected>可期</option>
-              <option value="笃行">笃行</option>
-              <option value="誓达">誓达</option>
-              <option value="心之所向">心之所向</option>
-            </select>
-            <select id="v-status" class="io-input" title="状态">
-              <option value="酝酿中" selected>酝酿中</option>
-              <option value="进行中">进行中</option>
-              <option value="已兑现">已兑现</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">期许</span>
+              <select id="v-level" class="io-input flex-1">
+                <option value="随缘">随缘</option>
+                <option value="可期" selected>可期</option>
+                <option value="笃行">笃行</option>
+                <option value="誓达">誓达</option>
+                <option value="心之所向">心之所向</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-12 shrink-0 text-[12px] text-slate-500">状态</span>
+              <select id="v-status" class="io-input flex-1">
+                <option value="酝酿中" selected>酝酿中</option>
+                <option value="进行中">进行中</option>
+                <option value="已兑现">已兑现</option>
+              </select>
+            </div>
             <div class="flex items-center gap-2 md:col-span-2">
               <button type="submit" class="ml-auto rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-teal-500/20 transition hover:brightness-110">✨ 种下这道光</button>
             </div>
@@ -3204,11 +3237,14 @@ console.warn = function(...args) {
                 </div>
                 <textarea id="dc-advice" rows="2" maxlength="300" placeholder="手动摘录，或点击右上角读取书生最近一条回答" class="io-input resize-none"></textarea>
               </div>
-              <select id="dc-period" class="io-input">
-                <option value="3">复盘验证期：3 个月后</option>
-                <option value="6">复盘验证期：半年后</option>
-                <option value="12">复盘验证期：1 年后</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <span class="w-16 shrink-0 text-[12px] text-slate-500">验证期</span>
+                <select id="dc-period" class="io-input flex-1">
+                  <option value="3">3 个月后</option>
+                  <option value="6">半年后</option>
+                  <option value="12">1 年后</option>
+                </select>
+              </div>
               <button type="submit" class="w-full rounded-lg bg-gradient-to-r from-primary/90 to-primary py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110">＋ 存入知行录</button>
             </form>
           </div>
@@ -8374,8 +8410,8 @@ function fillDictionarySelect(id, key, prefix) {
 /** 把所有字典驱动的表单控件刷新为最新选项 */
 function renderDictionaryForms() {
   fillDictionarySelect('todo-category', 'todo_category');
-  fillDictionarySelect('bk-purpose', 'book_purpose', '用途：');
-  fillDictionarySelect('bk-source', 'book_source', '来源：');
+  fillDictionarySelect('bk-purpose', 'book_purpose');
+  fillDictionarySelect('bk-source', 'book_source');
   fillDictionarySelect('proj-status', 'project_status');
   fillDictionarySelect('project-log-status', 'project_status');
   fillDictionarySelect('mt-scene', 'mentor_scene');
@@ -12392,6 +12428,7 @@ function openBookDrawer(id) {
     document.getElementById('bk-buy').value = book.buy_date || toDateStr();
     setBookSelectValue('bk-source', book.source || '');
     document.getElementById('bk-type').value = normalizeBookType(book.bookType);
+    document.getElementById('bk-condition').value = book.condition || '全新';
     document.getElementById('bk-price').value = book.price != null ? book.price : '';
     document.getElementById('bk-freight').value = book.freight != null ? book.freight : '';
     document.getElementById('bk-benefit').value = ['高', '中', '低'].indexOf(book.benefitLevel) >= 0 ? book.benefitLevel : '高';
@@ -12443,6 +12480,7 @@ function saveBook(e) {
     price,
     freight,
     bookType,
+    condition: document.getElementById('bk-condition').value,
     printFee,
     total,
     is_sold: document.getElementById('bk-sold').checked,
