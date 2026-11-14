@@ -1518,6 +1518,28 @@ console.warn = function(...args) {
     opacity: 1;
   }
 
+  /* 书生抽屉：可调宽 + 全屏 */
+  #scholar-drawer-resizer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 6px;
+    cursor: ew-resize;
+    z-index: 20;
+    background: transparent;
+  }
+  #scholar-drawer-resizer:hover {
+    background: rgba(8, 145, 178, 0.18);
+  }
+  #scholar-drawer.is-fullscreen {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  #scholar-drawer.is-fullscreen #scholar-drawer-resizer {
+    display: none;
+  }
+
   /* ========== 须弥观止 · 晓雾揽月（全屏背景层） ========== */
   #view-dashboard {
     position: relative;
@@ -2013,6 +2035,32 @@ console.warn = function(...args) {
                   class="mt-1.5 w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-[11px] text-slate-700 outline-none transition-colors focus:border-primary/50 focus:bg-white" />
                 <button onclick="saveDeepseekKey()" class="mt-1.5 w-full rounded-md bg-gradient-to-r from-primary/90 to-primary py-1.5 text-[11px] font-semibold text-white transition hover:brightness-110">保存 Key</button>
                 <p class="mt-1 text-[10px] leading-relaxed text-slate-400">Key 仅存于本地 IndexedDB，不会上传第三方。</p>
+              </div>
+
+              <!-- 回答朗读（TTS） -->
+              <div class="border-t border-slate-200 px-3.5 py-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[12px] text-slate-600">回答朗读</span>
+                  <span id="tts-status" class="text-[10px] text-slate-400">本机语音</span>
+                </div>
+                <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <input type="checkbox" id="tts-enabled" onchange="saveTtsSettings()" /> 回答落定后自动朗读
+                </label>
+                <select id="tts-provider" onchange="saveTtsSettings()"
+                  class="io-input mt-1.5 w-full" style="font-size:11px">
+                  <option value="local">本机语音（免费 · 离线）</option>
+                  <option value="volc">火山引擎 TTS（预留）</option>
+                  <option value="azure">Azure TTS（预留）</option>
+                  <option value="edge">Edge 在线语音（预留）</option>
+                </select>
+                <input id="tts-endpoint" type="text" autocomplete="off" placeholder="接口地址（选第三方后填写，预留）"
+                  class="mt-1.5 w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-[11px] text-slate-700 outline-none transition-colors focus:border-primary/50 focus:bg-white" />
+                <input id="tts-key" type="password" autocomplete="off" placeholder="第三方 TTS Key（预留）"
+                  class="mt-1.5 w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-[11px] text-slate-700 outline-none transition-colors focus:border-primary/50 focus:bg-white" />
+                <input id="tts-voice" type="text" autocomplete="off" placeholder="音色 ID（预留，如 zh-CN-xxxNeural）"
+                  class="mt-1.5 w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 font-mono text-[11px] text-slate-700 outline-none transition-colors focus:border-primary/50 focus:bg-white" />
+                <button onclick="saveTtsSettings()" class="mt-1.5 w-full rounded-md border border-primary/40 bg-primary/10 py-1.5 text-[11px] font-semibold text-primary transition hover:bg-primary/20">保存朗读配置</button>
+                <p class="mt-1 text-[10px] leading-relaxed text-slate-400">第三方 TTS 接口位已预留，选定服务商后再接实际请求；当前默认本机男声。</p>
               </div>
 
               <!-- 字典与选项配置（上移至设置区中部） -->
@@ -3166,7 +3214,7 @@ console.warn = function(...args) {
             <textarea id="diary-content" rows="6" maxlength="3000" placeholder="今日所想、所感、所悟……（3000 字以内）" class="io-input resize-none md:col-span-3"></textarea>
             <div class="flex items-center justify-between md:col-span-3">
               <span id="diary-char-count" class="font-mono text-[11px] text-slate-400">0 / 3000</span>
-              <button type="submit" class="rounded-lg bg-gradient-to-r from-primary/90 to-primary px-6 py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110">＋ 记下这一天</button>
+              <button type="submit" class="rounded-lg bg-gradient-to-r from-primary/90 to-primary px-6 py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110">感悟收讫</button>
             </div>
           </form>
         </div>
@@ -4094,7 +4142,8 @@ console.warn = function(...args) {
   </svg>
 </button>
 
-<aside id="scholar-drawer" class="fixed right-0 top-0 z-50 flex h-full w-[400px] max-w-[92vw] translate-x-full flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-out">
+<aside id="scholar-drawer" style="width:400px" class="fixed right-0 top-0 z-50 flex h-full max-w-[92vw] translate-x-full flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-out">
+  <div id="scholar-drawer-resizer" title="拖拽调整宽度" aria-hidden="true"></div>
   <!-- 罗盘星轨背景（绝对定位于抽屉中心，不随聊天滚动） -->
   <div class="scholar-bg-compass" aria-hidden="true">
     <svg viewBox="0 0 400 400" class="h-full w-full" fill="none" stroke="currentColor" stroke-width="1">
@@ -4191,6 +4240,9 @@ console.warn = function(...args) {
           <path d="M14 11v6"></path>
           <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
         </svg>
+      </button>
+      <button id="scholar-fullscreen-btn" onclick="toggleScholarFullscreen()" class="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="展开全屏">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
       </button>
       <button onclick="toggleScholarDrawer()" class="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="收起">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -4868,6 +4920,13 @@ function initData() {
     bazi_history: [],
     settings: {
       deepseekKey: '',
+      ttsEnabled: true,
+      ttsProvider: 'local',
+      ttsEndpoint: '',
+      ttsKey: '',
+      ttsVoice: '',
+      scholarDrawerWidth: 400,
+      scholarFullscreen: false,
       lockQuotes: [],
       lockQuoteInterval: 10,
       forceNightMode: false,
@@ -5572,6 +5631,7 @@ function switchView(viewId) {
     baziVerified = false;
     currentIndex = 0;
     stopGateQuoteRotation();   // 离开观向页即清理心法轮换定时器
+    stopScholarSpeak();        // 离开即停止朗读
   }
 
   // 1) 控制 6 个视图容器的显示 / 隐藏
@@ -8477,6 +8537,7 @@ function toggleToolbox(e) {
   if (willOpen) {
     renderSnapshotList();
     renderBaziAuthSettings();
+    fillTtsSettingsUI();
   }
 }
 
@@ -8515,6 +8576,7 @@ function openBackupPanel() {
     if (!panel) return;
     panel.classList.remove('hidden');
     renderSnapshotList();
+    fillTtsSettingsUI();
     panel.scrollTop = 0;
     const btn = panel.querySelector('button[onclick="exportBackup()"]');
     if (btn) {
@@ -8539,6 +8601,7 @@ function openToolboxForApiKey() {
     if (!panel) return;
     panel.classList.remove('hidden');
     renderSnapshotList();
+    fillTtsSettingsUI();
     const input = document.getElementById('deepseek-key-input');
     if (input) input.focus();
   }, 60);
@@ -10455,15 +10518,15 @@ function updateKeyStatusUI() {
  */
 function getScholarSystemPrompt() {
   const dayun = currentDayunInfo();
-  return '你是一位精通中国传统命理学的隐世书生，说话像个见过世面的老先生——不端着，不拽文。\n' +
+  return '你是一位精通中国传统命理学的长辈，像家里一位阅历深厚、心肠温热的老先生——说话循循善诱，不端架子，也不拽文。\n' +
     '用户当前命盘的四柱为：【' + getBaZi().join('、') + '】。\n' +
     '当前大运为：【' + dayun.gz + '】（' + dayun.range + '岁，' + dayun.note.replace('（当前大运）','') + '）。\n' +
     '规则：\n' +
     '1. 以《滴天髓》《子平真诠》《穷通宝鉴》《三命通会》《渊海子平》为依据，用大白话把命理想明白白讲清楚，不要堆砌古文。\n' +
     '2. 用户其他模块里记录的信息（待办、拾遗、书、决策等）只作背景参考，不要被它带偏——命理判断以古籍为准。\n' +
-    '3. 说话口语化，像跟朋友喝茶聊天，可以用"你""这步运""说白了"这种词，但结论要干脆，别绕弯子。\n' +
+    '3. 语气像长辈对晚辈循循善诱：先接住对方的处境和心情，再一步步把道理讲开；可以用"你看""别急""慢慢说""其实啊""老话讲"这类口吻；但分析要中肯客观，好坏两面都讲，不回避风险，也不夸大利好。\n' +
     '4. 不要反问用户四柱或大运——这些信息已经给你了，直接据此分析。\n' +
-    '5. 不搞心理安慰那一套，是什么说什么。超出八字范畴的问题，直说"这事儿命理管不了，回去修己"。' + PLAIN_TEXT_RULE;
+    '5. 不灌鸡汤、不刻意安慰，也不冷冰冰地吓人；是什么说什么，结论基于命理事实，措辞上留一份长辈的体恤。超出八字范畴的问题，平和地引回"先回去修己"。' + PLAIN_TEXT_RULE;
 }
 
 /* ================================================================
@@ -10693,9 +10756,65 @@ function toggleScholarDrawer() {
   }
 }
 
+/* ---------------- 书生抽屉：拖拽调宽 + 全屏展开 ---------------- */
+const DRAWER_MIN_W = 400, DRAWER_MAX_W = 720;
+const DRAWER_EXPAND_SVG = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+const DRAWER_COMPRESS_SVG = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M16 3v3a2 2 0 0 0 2 2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>';
+
+/** 按已保存的宽度/全屏状态应用抽屉布局 */
+function applyScholarDrawerLayout() {
+  const d = document.getElementById('scholar-drawer');
+  if (!d) return;
+  const s = AppState.settings || {};
+  const full = !!s.scholarFullscreen;
+  d.classList.toggle('is-fullscreen', full);
+  if (!full) {
+    const w = Number.isFinite(Number(s.scholarDrawerWidth)) ? Number(s.scholarDrawerWidth) : 400;
+    d.style.width = Math.min(DRAWER_MAX_W, Math.max(DRAWER_MIN_W, w)) + 'px';
+  }
+  const btn = document.getElementById('scholar-fullscreen-btn');
+  if (btn) btn.innerHTML = full ? DRAWER_COMPRESS_SVG : DRAWER_EXPAND_SVG;
+}
+
+function toggleScholarFullscreen() {
+  const d = document.getElementById('scholar-drawer');
+  if (!d) return;
+  if (!AppState.settings) AppState.settings = {};
+  AppState.settings.scholarFullscreen = !d.classList.contains('is-fullscreen');
+  saveState();
+  applyScholarDrawerLayout();
+}
+
+/** 绑定抽屉左缘拖拽调宽 */
+function initScholarDrawerResize() {
+  const d = document.getElementById('scholar-drawer');
+  const bar = document.getElementById('scholar-drawer-resizer');
+  if (!d || !bar) return;
+  let dragging = false;
+  bar.addEventListener('mousedown', e => {
+    if (d.classList.contains('is-fullscreen')) return;
+    dragging = true;
+    e.preventDefault();
+    document.body.style.cursor = 'ew-resize';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const w = window.innerWidth - e.clientX;
+    const clamped = Math.min(DRAWER_MAX_W, Math.max(DRAWER_MIN_W, w));
+    d.style.width = clamped + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    if (!AppState.settings) AppState.settings = {};
+    AppState.settings.scholarDrawerWidth = parseInt(d.style.width, 10) || 400;
+    saveState();
+  });
+}
+
 /** 侧栏权限门：未通过观向验证时隐藏对话与输入区 */
-function renderScholarGate() {
-  const gate = document.getElementById('scholar-gate');
+function renderScholarGate() {  const gate = document.getElementById('scholar-gate');
   const msgs = document.getElementById('scholar-messages');
   const bar = document.getElementById('scholar-input-bar');
   if (!gate || !msgs) return;
@@ -10757,6 +10876,7 @@ function clearScholarConversation() {
   scholarLastA = '';
   scholarUnsavedWarned = '';
   scholarContext = '';
+  stopScholarSpeak();
   scholarInited = true;
   saveState();
 
@@ -10815,6 +10935,123 @@ function appendScholarError(msg) {
   scrollScholarToBottom();
 }
 
+/* ---------------- 书生回答语音朗读（磁性男声） ---------------- */
+let scholarUtterance = null;
+
+/** 读取朗读配置 */
+function getTtsSettings() {
+  const s = AppState.settings || {};
+  return {
+    enabled: !!s.ttsEnabled,
+    provider: s.ttsProvider || 'local',
+    endpoint: (s.ttsEndpoint || '').trim(),
+    key: (s.ttsKey || '').trim(),
+    voice: (s.ttsVoice || '').trim()
+  };
+}
+
+/** 工具箱保存朗读配置 */
+function saveTtsSettings() {
+  if (!AppState.settings) AppState.settings = {};
+  AppState.settings.ttsEnabled = document.getElementById('tts-enabled').checked;
+  AppState.settings.ttsProvider = document.getElementById('tts-provider').value;
+  AppState.settings.ttsEndpoint = document.getElementById('tts-endpoint').value.trim();
+  AppState.settings.ttsKey = document.getElementById('tts-key').value.trim();
+  AppState.settings.ttsVoice = document.getElementById('tts-voice').value.trim();
+  saveState();
+  updateTtsStatusUI();
+  showToast('朗读配置已保存', 'success');
+}
+
+/** 工具箱内朗读状态徽标 */
+function updateTtsStatusUI() {
+  const t = getTtsSettings();
+  const badge = document.getElementById('tts-status');
+  if (!badge) return;
+  if (!t.enabled) {
+    badge.textContent = '已关闭';
+    badge.className = 'text-[10px] text-slate-400';
+  } else if (t.provider === 'local') {
+    badge.textContent = '本机语音';
+    badge.className = 'text-[10px] text-emerald-600';
+  } else {
+    badge.textContent = '第三方待接入';
+    badge.className = 'text-[10px] text-amber-600';
+  }
+}
+
+/** 打开工具箱时回填朗读配置 */
+function fillTtsSettingsUI() {
+  const t = getTtsSettings();
+  const en = document.getElementById('tts-enabled');
+  const pv = document.getElementById('tts-provider');
+  const ep = document.getElementById('tts-endpoint');
+  const k = document.getElementById('tts-key');
+  const vc = document.getElementById('tts-voice');
+  if (en) en.checked = t.enabled;
+  if (pv) pv.value = t.provider;
+  if (ep) ep.value = t.endpoint;
+  if (k) k.value = t.key;
+  if (vc) vc.value = t.voice;
+  updateTtsStatusUI();
+}
+
+/**
+ * 第三方 TTS 接入钩子（预留，尚未实现实际请求）。
+ * 选定服务商后：在此处 fetch 文本 → 拿回音频地址/Blob → <audio> 播放；
+ * 返回 true 表示已由第三方接管朗读，false 表示回落本机语音。
+ */
+async function speakViaThirdParty(text, t, btn) {
+  return false;
+}
+
+/** 从系统语音里挑一个中文男声；没有男声则退回中文语音，再退回默认 */
+function pickScholarVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const zh = voices.filter(v => /zh|cmn|中文|普通话/i.test((v.lang || '') + ' ' + (v.name || '')));
+  const pool = zh.length ? zh : voices;
+  const male = pool.find(v => /kangkang|康康|yunyang|云扬|yunjian|云健|yunxi|云希|male|男/i.test(v.name || ''));
+  return male || pool.find(v => /zh|cmn/i.test(v.lang || '')) || pool[0];
+}
+
+/** 朗读一段回答；再次点击同一按钮则停止。auto=true 时受自动朗读开关控制 */
+async function speakScholarAnswer(text, btn, auto) {
+  if (!text || !text.trim()) return;
+  const t = getTtsSettings();
+  if (auto && !t.enabled) return;
+
+  // 第三方 TTS 预留：已选第三方且填了地址/Key 时走接入钩子，暂未实现则回落本机
+  if (t.provider !== 'local' && t.endpoint && t.key) {
+    const handled = await speakViaThirdParty(text, t, btn);
+    if (handled) return;
+    showToast('第三方 TTS 尚未接入，暂用本机朗读', 'info');
+  }
+
+  if (!('speechSynthesis' in window)) { showToast('当前浏览器不支持语音朗读', 'error'); return; }
+  if (scholarUtterance && speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+    return;
+  }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const voice = pickScholarVoice();
+  if (voice) { u.voice = voice; u.lang = voice.lang; } else { u.lang = 'zh-CN'; }
+  u.rate = 0.96;
+  u.pitch = 0.88; // 略压低，偏沉稳磁性
+  u.onstart = () => { if (btn) btn.textContent = '🔇 停止'; };
+  u.onend = u.onerror = () => { if (btn) btn.textContent = '🔊 朗读'; scholarUtterance = null; };
+  scholarUtterance = u;
+  speechSynthesis.speak(u);
+}
+
+/** 离开书生视图或清空对话时停止朗读 */
+function stopScholarSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  scholarUtterance = null;
+}
+
 /* ---------------- 问答沉淀为知识卡片 ---------------- */
 
 /** 该回答是否已被收藏 */
@@ -10849,10 +11086,12 @@ function makeFavoriteBtn(type, question, answer) {
 /** 在 AI 回答气泡下方挂「沉淀卡片 / 收藏」操作条 */
 function attachSedimentButton(bubble, question, answer) {
   const wrap = bubble.parentElement;
-  if (!wrap || !answer || !answer.trim()) return;
+  if (!wrap || !answer || !answer.trim()) return null;
   wrap.classList.add('flex-col', 'items-start');
   const bar = document.createElement('div');
   bar.className = 'mt-1 flex flex-wrap items-center gap-1.5';
+  const speakBtn = makeAnswerActionBtn('🔊 朗读', () => speakScholarAnswer(answer, speakBtn));
+  bar.appendChild(speakBtn);
   bar.appendChild(makeAnswerActionBtn('💡 沉淀为知识卡片', () => openSedimentModal(question, answer)));
   bar.appendChild(makeAnswerActionBtn('🔄 换个说法', () => {
     const input = document.getElementById('scholar-input');
@@ -10861,6 +11100,7 @@ function attachSedimentButton(bubble, question, answer) {
   bar.appendChild(makeFavoriteBtn('scholar', question, answer));
   wrap.appendChild(bar);
   scrollScholarToBottom();
+  return speakBtn;
 }
 
 /** 迷局推演回答下方挂收藏 / 重试 / 驳回按钮 */
@@ -11199,8 +11439,9 @@ async function sendScholarQuestion() {
       scholarLastQ = q;
       scholarLastA = plainText;
       scholarUnsavedWarned = '';
-      attachSedimentButton(bubble, q, plainText); // 💡 一键沉淀为图谱知识卡片
+      const speakBtn = attachSedimentButton(bubble, q, plainText); // 💡 一键沉淀为图谱知识卡片
       recordBaziHistory(q, plainText, answerBaziId); // 命理问答按提问时命盘留痕
+      if (speakBtn) speakScholarAnswer(plainText, speakBtn, true); // 回答落定后自动朗读（受开关控制）
     }
   } catch (err) {
     typer.finish();
@@ -11725,7 +11966,7 @@ async function showAlmanac(dateStr) {
   document.getElementById('almanac-modal').classList.remove('hidden');
   document.getElementById('almanac-modal').classList.add('flex');
 
-  const sys = '你是一位资深命理师，根据用户八字（壬水日主，喜金水，甲子大运，1989年生），用3-5句话口语化分析指定日期的运势走向，分事业、财运、健康三方面，结尾给一句行动建议。不要用术语堆砌，像朋友聊天。';
+  const sys = '你是一位阅历深厚、心肠温热的长辈命理师，根据用户八字（壬水日主，喜金水，甲子大运，1989年生），用3-5句话中肯客观地分析指定日期的运势走向，分事业、财运、健康三方面，好坏两面都讲，不回避不顺、也不夸大吉利，结尾给一句平实的行动建议。先接住对方的处境，再慢慢讲；不要术语堆砌，多用"你看""别急"这类长辈口吻。';
   const user = '分析 ' + dateStr + '（农历' + lunar + '）这一天的运势。';
   try {
     let html = '';
@@ -12121,11 +12362,13 @@ function continueFavorite(id) {
   if (!f) return;
 
   if (f.type === 'scholar') {
-    scholarContext = '【前情提要】\n问：' + (f.question || '') + '\n答：' + f.answer + '\n\n请基于以上前情继续追问。\n\n追问：';
+    const text = '【前情提要】\n问：' + (f.question || '') + '\n答：' + f.answer + '\n\n请基于以上前情继续追问。';
     const drawer = document.getElementById('scholar-drawer');
     if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
-    appendScholarHint('已载入上次问答作为上下文，请输入你的追问');
-    setTimeout(() => document.getElementById('scholar-input').focus(), 320);
+    const input = document.getElementById('scholar-input');
+    if (input) { input.value = text.slice(0, 2000); }
+    appendScholarHint('已把上次问答带入问题框，可接着追问');
+    setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
   } else {
     dilemmaContext = '【前情提要】\n问：' + (f.question || '') + '\n答：' + f.answer + '\n\n请基于以上前情继续推演。\n\n追问：';
     switchView('ai-analysis');
@@ -13412,15 +13655,17 @@ function sedimentVision(id) {
 function askScholarAboutVision(id) {
   const v = getVisions().find(x => x && x.id === id);
   if (!v) return;
-  scholarContext = '【我正在思考一个目标】\n目标：' + v.name
+  const text = '【我正在思考一个目标】\n目标：' + v.name
     + (v.effect ? '\n期望效果：' + v.effect : '')
     + (v.path ? '\n实现路径：' + v.path : '')
     + (v.target_date ? '\n达成年月：' + v.target_date : '')
     + '\n\n请基于以上目标，给我一些务实的建议或追问：';
   const drawer = document.getElementById('scholar-drawer');
   if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
-  appendScholarHint('已载入目标上下文，请输入你的追问');
-  setTimeout(() => document.getElementById('scholar-input').focus(), 320);
+  const input = document.getElementById('scholar-input');
+  if (input) { input.value = text.slice(0, 2000); }
+  appendScholarHint('已把目标带入问题框，可直接发送或再补充');
+  setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
 }
 
 /** 单条时间轴卡片 */
@@ -13926,6 +14171,7 @@ function diaryCardHTML(d) {
             </div>
             <p class="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-slate-600">${escapeHtml(d.content || '')}</p>
             <div class="mt-3 flex items-center justify-end gap-2 border-t border-slate-100 pt-2.5">
+              <button onclick="askScholarAboutDiary('${d.id}')" class="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1 text-[11px] text-primary transition-colors hover:bg-primary/10">问书生</button>
               <button onclick="openDiaryEdit('${d.id}')" class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-500 transition-colors hover:border-primary/40 hover:text-primary">改稿</button>
               <button onclick="deleteDiary('${d.id}')" class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:border-rose-200 hover:text-rose-600">删除</button>
             </div>
@@ -13983,6 +14229,24 @@ function toggleDiaryStar(id) {
   d.starred = !d.starred;
   saveState();
   renderDiary();
+}
+
+/** 把这篇札记带入问书生问题框 */
+function askScholarAboutDiary(id) {
+  const d = getDiary().find(x => x.id === id);
+  if (!d) return;
+  const text = '【我记下一段札记】'
+    + (d.date ? '\n日期：' + d.date : '')
+    + (d.scope ? '\n类目：' + d.scope : '')
+    + (d.mood ? '\n心情：' + d.mood : '')
+    + '\n正文：' + (d.content || '')
+    + '\n\n请结合这段札记，给我一点点拨或追问：';
+  const drawer = document.getElementById('scholar-drawer');
+  if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
+  const input = document.getElementById('scholar-input');
+  if (input) { input.value = text.slice(0, 2000); }
+  appendScholarHint('已把这篇札记带入问题框，可直接发送或再补充');
+  setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
 }
 
 /* ================================================================
@@ -14544,6 +14808,13 @@ async function boot() {
   // 兼容补全：DeepSeek Key 等运行设置
   if (!AppState.settings || typeof AppState.settings !== 'object') AppState.settings = { deepseekKey: '' };
   if (typeof AppState.settings.deepseekKey !== 'string') AppState.settings.deepseekKey = '';
+  if (typeof AppState.settings.ttsEnabled !== 'boolean') AppState.settings.ttsEnabled = true;
+  if (typeof AppState.settings.ttsProvider !== 'string') AppState.settings.ttsProvider = 'local';
+  if (typeof AppState.settings.ttsEndpoint !== 'string') AppState.settings.ttsEndpoint = '';
+  if (typeof AppState.settings.ttsKey !== 'string') AppState.settings.ttsKey = '';
+  if (typeof AppState.settings.ttsVoice !== 'string') AppState.settings.ttsVoice = '';
+  if (!Number.isFinite(Number(AppState.settings.scholarDrawerWidth))) AppState.settings.scholarDrawerWidth = 400;
+  if (typeof AppState.settings.scholarFullscreen !== 'boolean') AppState.settings.scholarFullscreen = false;
   if (!Array.isArray(AppState.settings.lockQuotes)) AppState.settings.lockQuotes = [];
   if (!Number.isFinite(Number(AppState.settings.lockQuoteInterval))) AppState.settings.lockQuoteInterval = 10;
   if (typeof AppState.settings.forceNightMode !== 'boolean') AppState.settings.forceNightMode = false;
@@ -14717,6 +14988,10 @@ async function boot() {
   document.getElementById('scholar-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); sendScholarQuestion(); }
   });
+
+  // 书生抽屉：恢复宽度/全屏状态并绑定拖拽调宽
+  initScholarDrawerResize();
+  applyScholarDrawerLayout();
 
   // 9) 云端同步：初始化 → 拉取（在渲染前）
   CloudSync.init();
