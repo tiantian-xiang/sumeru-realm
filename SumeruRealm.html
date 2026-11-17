@@ -3071,7 +3071,7 @@ console.warn = function(...args) {
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="min-w-0">
               <h3 class="text-base font-bold text-slate-800">藏珍秘阁</h3>
-              <p class="mt-1 text-[12px] text-slate-500">收藏的推演与观向问答，可随时接着追问。</p>
+              <p class="mt-1 text-[12px] text-slate-500">收藏的推演与观向问答、金句摘录，可随时接着追问。</p>
             </div>
             <div id="treasure-row" class="hidden flex-1 items-center justify-center gap-3 sm:flex">
               <span class="treasure-item" title="玉简 · 上古爻辞">📜</span>
@@ -4265,7 +4265,7 @@ console.warn = function(...args) {
       <button onclick="guessScholarQuestion()" title="猜你想问"
         class="shrink-0 rounded-lg border border-amber-300/40 bg-amber-50 px-3 text-sm transition hover:bg-amber-100 disabled:opacity-40"
         style="color:#b45309">猜</button>
-      <textarea id="scholar-input" rows="4" maxlength="2000" placeholder="向书生提问，如：我近期适合跳槽吗？（2000 字以内）" class="io-input flex-1 resize-none"></textarea>
+      <textarea id="scholar-input" rows="4" maxlength="3000" placeholder="向书生提问，如：我近期适合跳槽吗？（3000 字以内）" class="io-input flex-1 resize-none"></textarea>
       <button id="scholar-send-btn" onclick="sendScholarQuestion()" class="shrink-0 rounded-lg bg-gradient-to-br from-amber-600 to-amber-800 px-4 text-sm font-bold text-amber-50 transition hover:brightness-110 disabled:cursor-not-allowed">问</button>
     </div>
     <button id="scholar-config-hint" onclick="openToolboxForApiKey()"
@@ -11054,29 +11054,33 @@ function stopScholarSpeak() {
 
 /* ---------------- 问答沉淀为知识卡片 ---------------- */
 
-/** 该回答是否已被收藏 */
-function isFavoriteAnswer(answer) {
+/** 该回答是否已被收藏；mode 区分问答一体(pair)与金句摘录(quote)，不传则不限类型 */
+function isFavoriteAnswer(answer, mode) {
   const a = String(answer || '').trim();
   if (!a) return false;
   const list = Array.isArray(AppState.favorites) ? AppState.favorites : [];
-  return list.some(f => f && String(f.answer || '').trim() === a);
+  return list.some(f => f && String(f.answer || '').trim() === a
+    && (mode === undefined || (f.mode || 'pair') === mode));
 }
 
-/** 收藏按钮：空心星 → 实心黄星，已收藏则禁用 */
-function makeFavoriteBtn(type, question, answer) {
-  const fav = isFavoriteAnswer(answer);
-  const btn = makeAnswerActionBtn(fav ? '⭐ 收藏' : '☆ 收藏', () => {
-    if (isFavoriteAnswer(answer)) {
-      showToast('该回答已收藏，请勿重复操作', 'info');
+/** 收藏按钮：mode=pair 问答一体，mode=quote 单句金句摘录 */
+function makeFavoriteBtn(type, question, answer, mode) {
+  mode = mode || 'pair';
+  const fav = isFavoriteAnswer(answer, mode);
+  const labelOff = mode === 'pair' ? '☆ 收藏问答' : '☆ 摘金句';
+  const labelOn = mode === 'pair' ? '⭐ 已收藏' : '⭐ 已摘金句';
+  const btn = makeAnswerActionBtn(fav ? labelOn : labelOff, () => {
+    if (isFavoriteAnswer(answer, mode)) {
+      showToast(mode === 'pair' ? '该问答已收藏，请勿重复操作' : '这句金句已摘录，请勿重复操作', 'info');
       return;
     }
-    addFavorite(type, question, answer);
-    btn.textContent = '⭐ 收藏';
+    addFavorite(type, question, answer, mode);
+    btn.textContent = labelOn;
     btn.disabled = true;
     btn.classList.add('text-amber-400', 'cursor-not-allowed', 'hover:text-amber-400', 'hover:border-slate-200');
   });
   if (fav) {
-    btn.textContent = '⭐ 收藏';
+    btn.textContent = labelOn;
     btn.disabled = true;
     btn.classList.add('text-amber-400', 'cursor-not-allowed', 'hover:text-amber-400', 'hover:border-slate-200');
   }
@@ -11097,7 +11101,8 @@ function attachSedimentButton(bubble, question, answer) {
     const input = document.getElementById('scholar-input');
     if (input) { input.value = question + '（换个角度再说一遍，更口语一点）'; sendScholarQuestion(); }
   }));
-  bar.appendChild(makeFavoriteBtn('scholar', question, answer));
+  bar.appendChild(makeFavoriteBtn('scholar', question, answer, 'pair'));
+  bar.appendChild(makeFavoriteBtn('scholar', question, answer, 'quote'));
   wrap.appendChild(bar);
   scrollScholarToBottom();
   return speakBtn;
@@ -11110,7 +11115,7 @@ function attachDilemmaFavorite(bubble, question, answer) {
   wrap.classList.add('flex-col', 'items-start');
   const bar = document.createElement('div');
   bar.className = 'mt-1 flex flex-wrap items-center gap-1.5';
-  bar.appendChild(makeFavoriteBtn('dilemma', question, answer));
+  bar.appendChild(makeFavoriteBtn('dilemma', question, answer, 'pair'));
   bar.appendChild(makeAnswerActionBtn('🔄 重试', () => retryDilemma(question, answer, bubble)));
   const rejectBtn = makeAnswerActionBtn('👎 驳回', () => openDilemmaReject(question, answer, bubble, bar));
   rejectBtn.classList.add('hover:border-rose-300', 'hover:text-rose-600');
@@ -11698,24 +11703,26 @@ function getFavorites() {
   return AppState.favorites;
 }
 
-/** 收藏一条 AI 回答 */
-function addFavorite(type, question, answer) {
+/** 收藏一条 AI 问答；mode=pair 问答一体，mode=quote 金句摘录 */
+function addFavorite(type, question, answer, mode) {
   const cleanA = String(answer || '').trim();
   if (!cleanA) return;
-  if (isFavoriteAnswer(cleanA)) {
-    showToast('该回答已收藏，请勿重复操作', 'info');
+  mode = mode || 'pair';
+  if (isFavoriteAnswer(cleanA, mode)) {
+    showToast(mode === 'pair' ? '该问答已收藏，请勿重复操作' : '这句金句已摘录，请勿重复操作', 'info');
     return;
   }
   getFavorites().unshift({
     id: 'fav-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
     type,
+    mode,
     question: String(question || '').trim(),
     answer: cleanA,
     bazi_id: AppState.current_bazi_id || 'bazi_default',
     at: new Date().toISOString(),
   });
   saveState();
-  showToast('已收藏，可前往【藏珍秘阁】继续追问', 'success');
+  showToast(mode === 'pair' ? '已收藏整组问答，可前往【藏珍秘阁】继续追问' : '已摘录金句，可前往【藏珍秘阁】查看', 'success');
 }
 
 function setFavoriteTab(t) {
@@ -12329,24 +12336,45 @@ function renderFavorites() {
   if (kw) list = list.filter(f => (f.question||'').toLowerCase().includes(kw) || (f.answer||'').toLowerCase().includes(kw));
   const box = document.getElementById('favorite-list');
   if (list.length === 0) {
-    box.innerHTML = '<p class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">暂无收藏 —— 在 AI 回答下方点「⭐ 收藏」即可留存</p>';
+    box.innerHTML = '<p class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">暂无收藏 —— 在 AI 回答下方点「☆ 收藏问答」留存整组，或「☆ 摘金句」留存单句。</p>';
     return;
   }
-  box.innerHTML = list.map(f => `
+  box.innerHTML = list.map(f => {
+    const mode = f.mode || 'pair';
+    const time = new Date(f.at).toLocaleString('zh-CN', { hour12: false });
+    const typeBadge = f.type === 'scholar' ? 'border-accent/40 bg-accent/10 text-accent' : 'border-primary/30 bg-primary/10 text-primary';
+    const typeLabel = f.type === 'scholar' ? '观向问答' : '秉烛问局';
+    if (mode === 'quote') {
+      const src = f.question ? escapeHtml(f.question) : '（未记录出处问题）';
+      return `
+      <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+        <div class="flex items-start justify-between gap-3">
+          <span class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] text-amber-700">金句摘录</span>
+          <span class="shrink-0 text-[10px] text-slate-400">${time}</span>
+        </div>
+        <p class="mt-2 max-h-32 overflow-y-auto whitespace-pre-wrap text-[13px] leading-relaxed text-slate-700">${escapeHtml(f.answer.slice(0, 300))}${f.answer.length > 300 ? '…' : ''}</p>
+        ${f.question ? `<details class="mt-2 text-[11px] text-slate-500"><summary class="cursor-pointer hover:text-slate-700">出处问题</summary><p class="mt-1 whitespace-pre-wrap leading-relaxed">${src}</p></details>` : ''}
+        <div class="mt-3 flex items-center justify-end">
+          <button onclick="deleteFavorite('${f.id}')" class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:text-rose-600">删除</button>
+        </div>
+      </div>`;
+    }
+    return `
     <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
       <div class="flex items-start justify-between gap-3">
         <p class="text-[13px] font-semibold leading-snug text-slate-700">${escapeHtml(f.question || '（未记录问题）')}</p>
-        <span class="shrink-0 text-[10px] text-slate-400">${new Date(f.at).toLocaleString('zh-CN', { hour12: false })}</span>
+        <span class="shrink-0 text-[10px] text-slate-400">${time}</span>
       </div>
-      <p class="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap text-[12px] leading-relaxed text-slate-500">${escapeHtml(f.answer.slice(0, 300))}${f.answer.length > 300 ? '…' : ''}</p>
+      <p class="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap text-[12px] leading-relaxed text-slate-500">${escapeHtml((f.answer || '').slice(0, 300))}${(f.answer || '').length > 300 ? '…' : ''}</p>
       <div class="mt-3 flex items-center justify-between">
-        <span class="rounded-full border px-2 py-0.5 text-[10px] ${f.type === 'scholar' ? 'border-accent/40 bg-accent/10 text-accent' : 'border-primary/30 bg-primary/10 text-primary'}">${f.type === 'scholar' ? '观向问答' : '秉烛问局'}</span>
+        <span class="rounded-full border px-2 py-0.5 text-[10px] ${typeBadge}">${typeLabel}</span>
         <div class="flex items-center gap-1.5">
           <button onclick="continueFavorite('${f.id}')" class="rounded-md bg-gradient-to-r from-primary/90 to-primary px-2.5 py-1 text-[11px] font-semibold text-white transition hover:brightness-110">继续追问</button>
           <button onclick="deleteFavorite('${f.id}')" class="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:text-rose-600">删除</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function deleteFavorite(id) {
@@ -12366,7 +12394,7 @@ function continueFavorite(id) {
     const drawer = document.getElementById('scholar-drawer');
     if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
     const input = document.getElementById('scholar-input');
-    if (input) { input.value = text.slice(0, 2000); }
+    if (input) { input.value = text.slice(0, 3000); }
     appendScholarHint('已把上次问答带入问题框，可接着追问');
     setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
   } else {
@@ -13663,7 +13691,7 @@ function askScholarAboutVision(id) {
   const drawer = document.getElementById('scholar-drawer');
   if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
   const input = document.getElementById('scholar-input');
-  if (input) { input.value = text.slice(0, 2000); }
+  if (input) { input.value = text.slice(0, 3000); }
   appendScholarHint('已把目标带入问题框，可直接发送或再补充');
   setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
 }
@@ -14244,7 +14272,7 @@ function askScholarAboutDiary(id) {
   const drawer = document.getElementById('scholar-drawer');
   if (drawer.classList.contains('translate-x-full')) toggleScholarDrawer();
   const input = document.getElementById('scholar-input');
-  if (input) { input.value = text.slice(0, 2000); }
+  if (input) { input.value = text.slice(0, 3000); }
   appendScholarHint('已把这篇札记带入问题框，可直接发送或再补充');
   setTimeout(() => { const el = document.getElementById('scholar-input'); if (el) el.focus(); }, 320);
 }
