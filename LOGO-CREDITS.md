@@ -1,10 +1,10 @@
 # Logo 权属与定稿记录
 
 ## 基本信息
-- 标志名称：淇庚の须弥之境（山 · 水 · 三人同行）
+- 标志名称：须弥（Sumeru）· 山 · 水 · 三人同行
+- 出处原型：淇庚の须弥之境（SumeruRealm.html）
 - 作者：向根（Xiang Gen）
 - 定稿日期：2026-11-19
-- 来源工程：SumeruRealm.html（单文件个人原型）
 - 版权声明：Copyright (c) 2026 向根 (Xiang Gen). All rights reserved.
 
 ## 标志文件清单
