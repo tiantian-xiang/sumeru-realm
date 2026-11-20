@@ -13,6 +13,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="须弥之境" />
 <meta name="description" content="淇庚の须弥之境 · 个人内省与知识沉淀道场" />
+<meta name="author" content="向根 (Xiang Gen)" />
+<meta name="copyright" content="Copyright (c) 2026 向根 (Xiang Gen). All rights reserved." />
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='22'%20fill='%232B9FAC'/%3E%3Cpolyline%20points='22,76%2050,30%2078,76'%20fill='none'%20stroke='white'%20stroke-width='8'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3Cline%20x1='16'%20y1='82'%20x2='84'%20y2='82'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'/%3E%3Ccircle%20cx='50'%20cy='18'%20r='5'%20fill='white'/%3E%3C/svg%3E" />
 <link rel="manifest" href='data:application/manifest+json;utf8,%7B%22name%22%3A%22%E6%B7%87%E5%BA%9A%E3%81%AE%E9%A1%BB%E5%BC%A5%E4%B9%8B%E5%A2%83%22%2C%22short_name%22%3A%22%E9%A1%BB%E5%BC%A5%E4%B9%8B%E5%A2%83%22%2C%22start_url%22%3A%22./%22%2C%22scope%22%3A%22./%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait-primary%22%2C%22background_color%22%3A%22%23f5f1e8%22%2C%22theme_color%22%3A%22%232B9FAC%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data:image/svg+xml,%253Csvg%2520xmlns%253D%2527http%253A//www.w3.org/2000/svg%2527%2520viewBox%253D%25270%25200%2520100%2520100%2527%253E%253Crect%2520width%253D%2527100%2527%2520height%253D%2527100%2527%2520rx%253D%252720%2527%2520fill%253D%2527%25232B9FAC%2527/%253E%253Cpolyline%2520points%253D%252722%252C76%252050%252C30%252078%252C76%2527%2520fill%253D%2527none%2527%2520stroke%253D%2527white%2527%2520stroke-width%253D%25278%2527%2520stroke-linecap%253D%2527round%2527%2520stroke-linejoin%253D%2527round%2527/%253E%253Cline%2520x1%253D%252716%2527%2520y1%253D%252782%2527%2520x2%253D%252784%2527%2520y2%253D%252782%2527%2520stroke%253D%2527white%2527%2520stroke-width%253D%25272%2527%2520stroke-linecap%253D%2527round%2527/%253E%253Ccircle%2520cx%253D%252750%2527%2520cy%253D%252718%2527%2520r%253D%25275%2527%2520fill%253D%2527white%2527/%253E%253C/svg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image/svg+xml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D' />
 <script>
@@ -14934,6 +14936,8 @@ async function boot() {
   if (projDateEl) projDateEl.value = toDateStr();
   const mtDateEl = document.getElementById('mt-date');
   if (mtDateEl) mtDateEl.value = toDateStr();
+  const momentDateEl = document.getElementById('moment-date');
+  if (momentDateEl && !momentDateEl.value) momentDateEl.value = toDateStr();
 
   // 读讫印勾选前的确认提示
   const readSealChk = document.getElementById('bk-read-seal');

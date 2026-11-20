@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="淇庚の须弥之境 Logo（反色版）">
+  <title>淇庚の须弥之境 · 反色版</title>
+  <desc>山峰、山顶水滴、水波与三人同行的组合标志（白底反色版）。Copyright (c) 2026 向根 (Xiang Gen). All rights reserved.</desc>
+  <rect width="100" height="100" rx="20" fill="#FFFFFF"/>
+  <polyline points="24,70 50,32 76,70" fill="none" stroke="#2B9FAC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 14 Q45 22 45 26 Q45 31 50 31 Q55 31 55 26 Q55 22 50 14 Z" fill="#2B9FAC" opacity="0.85"/>
+  <path d="M16 80 C28 75, 38 84, 50 80 S74 75, 86 80" fill="none" stroke="#2B9FAC" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+  <circle cx="34" cy="74" r="1.8" fill="#C9A84C" opacity="0.75"/>
+  <circle cx="50" cy="72" r="2.2" fill="#D4B85C" opacity="0.85"/>
+  <circle cx="66" cy="74" r="1.8" fill="#C9A84C" opacity="0.6"/>
+</svg>
